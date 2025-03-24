@@ -3,8 +3,9 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { visitorStatuses } from '../data/data'
+import { permissionStatuses } from '../../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
+import { PermissionsPrimaryButtons } from './permission-primary-buttons'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -20,10 +21,10 @@ export function DataTableToolbar<TData>({
       <div className='flex flex-1 items-center space-x-2'>
         {/* Filter untuk kolom Company */}
         <Input
-          placeholder='Filter companies...'
-          value={(table.getColumn('Company')?.getFilterValue() as string) ?? ''}
+          placeholder='Search persons...'
+          value={(table.getColumn('Name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('Company')?.setFilterValue(event.target.value)
+            table.getColumn('Name')?.setFilterValue(event.target.value)
           }
           className='h-8 w-[150px] lg:w-[250px]'
         />
@@ -32,7 +33,7 @@ export function DataTableToolbar<TData>({
           <DataTableFacetedFilter
             column={table.getColumn('status')}
             title='Status'
-            options={visitorStatuses.map((status) => ({
+            options={permissionStatuses.map((status) => ({
               label: status.label,
               value: status.value,
             }))}

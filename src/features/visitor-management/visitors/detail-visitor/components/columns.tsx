@@ -1,21 +1,16 @@
 import { ComponentType } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { IconCircle, IconClock, IconX } from '@tabler/icons-react'
+import { IconCircle } from '@tabler/icons-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { companies, persons, visitorStatuses } from '../data/data'
-import { Visitor } from '../data/schema'
+import { permissionStatuses } from '../../data/data'
+import { persons, accessControls } from '../../data/data'
+import { Permission, Person, AccessControl } from '../../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
-type Status = {
-  value: 'REGISTERED' | 'ON_VISIT' | 'EXPIRED'
-  label: string
-  icon: ComponentType<{ className?: string }> | null
-}
+const statuses = permissionStatuses
 
-const statuses = visitorStatuses
-
-export const columns: ColumnDef<Visitor>[] = [
+export const columns: ColumnDef<Permission>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -41,61 +36,72 @@ export const columns: ColumnDef<Visitor>[] = [
     enableHiding: false,
   },
   {
-    id: 'Company',
-    accessorKey: 'company_id',
+    id: 'Name',
+    accessorKey: 'person_id',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Company' />
+      <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row, column }) => {
-      const company = companies.find((c) => c.id === row.getValue(column.id))
+      const person = persons.find(
+        (person: Person) => person.id === row.getValue(column.id)
+      )
       return (
         <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-          {company ? company.name : 'Unknown'}
+          {person ? person.name : 'Unknown'}
         </div>
       )
     },
     filterFn: (row, id, filterValue) => {
-      const company = companies.find((c) => c.id === row.getValue(id))
-      const companyName = company ? company.name.toLowerCase() : ''
-      return companyName.includes((filterValue as string).toLowerCase())
+      const person = persons.find(
+        (person: Person) => person.id === row.getValue(id)
+      )
+      const personName = person ? person.name.toLowerCase() : ''
+      return personName.includes((filterValue as string).toLowerCase())
     },
   },
   {
-    id: 'Leader',
-    accessorKey: 'leader_id',
+    id: 'access_control_id',
+    accessorKey: 'access_control_id',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Leader' />
+      <DataTableColumnHeader column={column} title='Room Access' />
     ),
     cell: ({ row, column }) => {
-      const leader = persons.find((p) => p.id === row.getValue(column.id))
+      const room = accessControls.find(
+        (ac: AccessControl) => ac.id === row.getValue(column.id)
+      )
       return (
         <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-          {leader ? leader.name : 'Unknown'}
+          {room ? room.roomName : 'Unknown'}
         </div>
       )
     },
+    filterFn: (row, id, filterValue) => {
+      const room = accessControls.find(
+        (ac: AccessControl) => ac.id === row.getValue(id)
+      )
+      const roomName = room ? room.roomName.toLowerCase() : ''
+      return roomName.includes((filterValue as string).toLowerCase())
+    },
   },
   {
-    id: 'PIC Name',
-    accessorKey: 'pic_name',
+    accessorKey: 'start_time',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='PIC' />
+      <DataTableColumnHeader column={column} title='Start Time' />
     ),
-    cell: ({ row, column }) => (
+    cell: ({ row }) => (
       <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue(column.id)}
+        {row.getValue('start_time')}
       </div>
     ),
   },
   {
-    id: 'Department',
-    accessorKey: 'pic_department',
+    accessorKey: 'end_time',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Dept' />
+      <DataTableColumnHeader column={column} title='End Time' />
     ),
-    cell: ({ row, column }) => (
+    cell: ({ row }) => (
       <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue(column.id)}
+        {row.getValue('end_time')}
       </div>
     ),
   },
@@ -114,8 +120,10 @@ export const columns: ColumnDef<Visitor>[] = [
       const IconComponent = status.icon
       return (
         <div className='flex w-[100px] items-center'>
-          {IconComponent && (
+          {IconComponent ? (
             <IconComponent className='mr-2 h-4 w-4 text-muted-foreground' />
+          ) : (
+            <IconCircle className='mr-2 h-4 w-4 text-muted-foreground' />
           )}
           <span>{status.label}</span>
         </div>
@@ -124,18 +132,6 @@ export const columns: ColumnDef<Visitor>[] = [
     filterFn: (row, id, value) => {
       return (value as string[]).includes(row.getValue(id))
     },
-  },
-  {
-    id: 'Arrival Date',
-    accessorKey: 'arrival_date',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title={column.id} />
-    ),
-    cell: ({ row, column }) => (
-      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue(column.id)}
-      </div>
-    ),
   },
   {
     id: 'actions',

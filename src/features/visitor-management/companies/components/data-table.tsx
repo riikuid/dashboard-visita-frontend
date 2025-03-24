@@ -1,5 +1,4 @@
-import React from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -22,19 +21,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTablePagination } from './data-table-pagination'
-import { DataTableToolbar } from './data-table-toolbar'
+import { DataTablePagination } from '../components/data-table-pagination'
+import { DataTableToolbar } from '../components/data-table-toolbar'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const navigate = useNavigate()
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -65,14 +63,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  const handleCellClick = (columnId: string, row: { original: TData }) => {
-    if (columnId === 'Company') {
-      navigate({
-        to: `/visitor-management/visitors/${row.original.id}`,
-      })
-    }
-  }
-
   return (
     <div className='space-y-4'>
       <DataTableToolbar table={table} />
@@ -81,16 +71,18 @@ export function DataTable<TData extends { id: string }, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} colSpan={header.colSpan}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} colSpan={header.colSpan}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -102,10 +94,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      onClick={() => handleCellClick(cell.column.id, row)}
-                    >
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

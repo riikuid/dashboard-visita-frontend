@@ -48,6 +48,8 @@ const AuthenticatedVisitorManagementVisitorsIndexLazyImport = createFileRoute(
 const AuthenticatedVisitorManagementCompaniesIndexLazyImport = createFileRoute(
   '/_authenticated/visitor-management/companies/',
 )()
+const AuthenticatedVisitorManagementVisitorsVisitorIdLazyImport =
+  createFileRoute('/_authenticated/visitor-management/visitors/$visitorId')()
 
 // Create/Update Routes
 
@@ -175,6 +177,17 @@ const AuthenticatedVisitorManagementCompaniesIndexLazyRoute =
     ).then((d) => d.Route),
   )
 
+const AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute =
+  AuthenticatedVisitorManagementVisitorsVisitorIdLazyImport.update({
+    id: '/visitor-management/visitors/$visitorId',
+    path: '/visitor-management/visitors/$visitorId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/_authenticated/visitor-management/visitors/$visitorId.lazy'
+    ).then((d) => d.Route),
+  )
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -263,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTasksIndexLazyImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/visitor-management/visitors/$visitorId': {
+      id: '/_authenticated/visitor-management/visitors/$visitorId'
+      path: '/visitor-management/visitors/$visitorId'
+      fullPath: '/visitor-management/visitors/$visitorId'
+      preLoaderRoute: typeof AuthenticatedVisitorManagementVisitorsVisitorIdLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/visitor-management/companies/': {
       id: '/_authenticated/visitor-management/companies/'
       path: '/visitor-management/companies'
@@ -305,6 +325,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
   AuthenticatedTasksIndexLazyRoute: typeof AuthenticatedTasksIndexLazyRoute
+  AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute: typeof AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute
   AuthenticatedVisitorManagementCompaniesIndexLazyRoute: typeof AuthenticatedVisitorManagementCompaniesIndexLazyRoute
   AuthenticatedVisitorManagementVisitorsIndexLazyRoute: typeof AuthenticatedVisitorManagementVisitorsIndexLazyRoute
 }
@@ -316,6 +337,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedHelpCenterIndexLazyRoute: AuthenticatedHelpCenterIndexLazyRoute,
   AuthenticatedTasksIndexLazyRoute: AuthenticatedTasksIndexLazyRoute,
+  AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute:
+    AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute,
   AuthenticatedVisitorManagementCompaniesIndexLazyRoute:
     AuthenticatedVisitorManagementCompaniesIndexLazyRoute,
   AuthenticatedVisitorManagementVisitorsIndexLazyRoute:
@@ -338,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/settings/': typeof AuthenticatedSettingsIndexLazyRoute
   '/tasks': typeof AuthenticatedTasksIndexLazyRoute
+  '/visitor-management/visitors/$visitorId': typeof AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute
   '/visitor-management/companies': typeof AuthenticatedVisitorManagementCompaniesIndexLazyRoute
   '/visitor-management/visitors': typeof AuthenticatedVisitorManagementVisitorsIndexLazyRoute
 }
@@ -353,6 +377,7 @@ export interface FileRoutesByTo {
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/settings': typeof AuthenticatedSettingsIndexLazyRoute
   '/tasks': typeof AuthenticatedTasksIndexLazyRoute
+  '/visitor-management/visitors/$visitorId': typeof AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute
   '/visitor-management/companies': typeof AuthenticatedVisitorManagementCompaniesIndexLazyRoute
   '/visitor-management/visitors': typeof AuthenticatedVisitorManagementVisitorsIndexLazyRoute
 }
@@ -371,6 +396,7 @@ export interface FileRoutesById {
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexLazyRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexLazyRoute
+  '/_authenticated/visitor-management/visitors/$visitorId': typeof AuthenticatedVisitorManagementVisitorsVisitorIdLazyRoute
   '/_authenticated/visitor-management/companies/': typeof AuthenticatedVisitorManagementCompaniesIndexLazyRoute
   '/_authenticated/visitor-management/visitors/': typeof AuthenticatedVisitorManagementVisitorsIndexLazyRoute
 }
@@ -390,6 +416,7 @@ export interface FileRouteTypes {
     | '/help-center'
     | '/settings/'
     | '/tasks'
+    | '/visitor-management/visitors/$visitorId'
     | '/visitor-management/companies'
     | '/visitor-management/visitors'
   fileRoutesByTo: FileRoutesByTo
@@ -404,6 +431,7 @@ export interface FileRouteTypes {
     | '/help-center'
     | '/settings'
     | '/tasks'
+    | '/visitor-management/visitors/$visitorId'
     | '/visitor-management/companies'
     | '/visitor-management/visitors'
   id:
@@ -420,6 +448,7 @@ export interface FileRouteTypes {
     | '/_authenticated/help-center/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
+    | '/_authenticated/visitor-management/visitors/$visitorId'
     | '/_authenticated/visitor-management/companies/'
     | '/_authenticated/visitor-management/visitors/'
   fileRoutesById: FileRoutesById
@@ -466,6 +495,7 @@ export const routeTree = rootRoute
         "/_authenticated/apps/",
         "/_authenticated/help-center/",
         "/_authenticated/tasks/",
+        "/_authenticated/visitor-management/visitors/$visitorId",
         "/_authenticated/visitor-management/companies/",
         "/_authenticated/visitor-management/visitors/"
       ]
@@ -512,6 +542,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/tasks/": {
       "filePath": "_authenticated/tasks/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/visitor-management/visitors/$visitorId": {
+      "filePath": "_authenticated/visitor-management/visitors/$visitorId.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/visitor-management/companies/": {

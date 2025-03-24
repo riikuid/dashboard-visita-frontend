@@ -60,7 +60,7 @@ export const sidebarData: SidebarData = {
               icon: IconUsers,
             },
             {
-              title: 'Visitor',
+              title: 'Company',
               url: '/visitor-management/companies',
               icon: IconBuildings,
             },

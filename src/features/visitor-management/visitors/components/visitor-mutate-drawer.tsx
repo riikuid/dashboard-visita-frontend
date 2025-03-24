@@ -176,7 +176,7 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                   size='sm'
                   onClick={() => {
                     setIsAddingNewCompany(!isAddingNewCompany)
-                    setIsAddingNewLeader(!isAddingNewLeader)
+                    setIsAddingNewLeader(!isAddingNewCompany)
                     form.setValue('companyId', '')
                     form.setValue('companyName', '')
                     form.setValue('companyAddress', '')

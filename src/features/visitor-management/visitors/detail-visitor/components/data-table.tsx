@@ -65,14 +65,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  const handleCellClick = (columnId: string, row: { original: TData }) => {
-    if (columnId === 'Company') {
-      navigate({
-        to: `/visitor-management/visitors/${row.original.id}`,
-      })
-    }
-  }
-
   return (
     <div className='space-y-4'>
       <DataTableToolbar table={table} />

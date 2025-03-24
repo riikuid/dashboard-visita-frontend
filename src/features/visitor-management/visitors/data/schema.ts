@@ -25,8 +25,7 @@ export const visitorSchema = z.object({
   pic_department: z.string(),
   necessary: z.string(),
   note: z.string().nullable(),
-  status: z.enum(["REGISTERED", "ON_VISIT", "EXPIRED"]),
-  // status: z.enum(["invitation", "registered visitor", "visit application", "on qrcode", "on area partial", "on area full", "on location", "partial overlimit on checkpoint", "full overlimit on checkpoint", "partial out of area", "full out of area"]),
+  status: z.enum(["invitation", "registered visitor", "visit application", "on qrcode", "on area partial", "on area full", "on location", "partial overlimit on checkpoint", "full overlimit on checkpoint", "partial out of area", "full out of area"]),
 });
 
 export const permissionSchema = z.object({
@@ -36,7 +35,14 @@ export const permissionSchema = z.object({
   access_control_id: z.string(),
   start_time: z.string(),
   end_time: z.string(),
-  status: z.enum(["ACTIVE", "EXPIRED"]),
+  status: z.enum([ 'registered'
+    , 'qr ready'
+    , 'on area'
+    , 'checkpoint'
+    , 'checkpoint overlimit'
+    , 'ready to go'
+    , 'canceled'
+    , 'expired']),
 });
 
 export const qrSchema = z.object({
@@ -53,6 +59,25 @@ export const permissionCardSchema = z.object({
   rfid_id: z.string(),
 });
 
+export const accessControlSchema = z.object({
+  id: z.string(),
+  roomName: z.string(),
+  department_id: z.string(),
+  ipAddress: z.string(),
+  username: z.string(),
+  password: z.string(),
+  status: z.enum(["ACTIVE", "INACTIVE"]),
+});
+
+export const rfidSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  data: z.string(),
+  status: z.string(),
+});
+
+export type AccessControl = z.infer<typeof accessControlSchema>;
+export type RFID = z.infer<typeof rfidSchema>;
 export type Company = z.infer<typeof companySchema>;
 export type Person = z.infer<typeof personSchema>;
 export type Visitor = z.infer<typeof visitorSchema>;
