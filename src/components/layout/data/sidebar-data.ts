@@ -1,5 +1,6 @@
 import {
   IconBug,
+  IconBuildings,
   IconChecklist,
   IconError404,
   IconHelp,
@@ -7,6 +8,7 @@ import {
   IconLockAccess,
   IconSettings,
   IconUserCog,
+  IconUsers,
 } from '@tabler/icons-react'
 import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -54,8 +56,13 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: 'Visitor',
-              url: '/visitor-management',
-              icon: IconUserCog,
+              url: '/visitor-management/visitors',
+              icon: IconUsers,
+            },
+            {
+              title: 'Visitor',
+              url: '/visitor-management/companies',
+              icon: IconBuildings,
             },
           ],
           
