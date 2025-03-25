@@ -68,24 +68,6 @@ export const visitorStatuses = [
   },
 ]
 
-// export const visitorStatuses = [
-//   {
-//     value: 'REGISTERED',
-//     label: 'Registered',
-//     icon: null,
-//   },
-//   {
-//     value: 'ON_VISIT',
-//     label: 'On Visit',
-//     icon: null,
-//   },
-//   {
-//     value: 'EXPIRED',
-//     label: 'Expired',
-//     icon: null,
-//   },
-// ]
-
 export const permissionStatuses = [
   {
     value: 'registered',

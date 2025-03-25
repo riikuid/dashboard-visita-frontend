@@ -35,7 +35,6 @@ export const columns: ColumnDef<Department>[] = [
       <DataTableColumnHeader column={column} title='ID' />
     ),
     cell: ({ row }) => <div className='w-[80px]'>{row.getValue('id')}</div>,
-    enableSorting: false,
     enableHiding: false,
   },
   {
@@ -48,7 +47,6 @@ export const columns: ColumnDef<Department>[] = [
         {row.getValue('name')}
       </div>
     ),
-    enableSorting: false,
     enableHiding: false,
   },
 

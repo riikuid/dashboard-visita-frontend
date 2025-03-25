@@ -9,6 +9,7 @@ import {
   IconLayoutDashboard,
   IconLockAccess,
   IconSettings,
+  IconTicket,
   IconUserCog,
   IconUsers,
 } from '@tabler/icons-react'
@@ -87,6 +88,11 @@ export const sidebarData: SidebarData = {
           title: 'Departments',
           url: '/departments',
           icon: IconBuildingCog,
+        },
+        {
+          title: 'Tickets',
+          url: '/tickets',
+          icon: IconTicket,
         },
       ],
     },
