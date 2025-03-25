@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   ColumnDef,
@@ -22,8 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTablePagination } from '../components/data-table-pagination'
-import { DataTableToolbar } from '../components/data-table-toolbar'
+import { DataTablePagination } from './data-table-pagination'
+import { DataTableToolbar } from './data-table-toolbar'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -41,7 +41,6 @@ export function DataTable<TData extends { id: string }, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
-
   const [sorting, setSorting] = React.useState<SortingState>([])
 
   const table = useReactTable({
@@ -66,14 +65,6 @@ export function DataTable<TData extends { id: string }, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  const handleCellClick = (columnId: string, row: { original: TData }) => {
-    if (columnId !== 'actions' && columnId !== 'select') {
-      navigate({
-        to: `/visitor-management/companies/${row.original.id}`,
-      })
-    }
-  }
-
   return (
     <div className='space-y-4'>
       <DataTableToolbar table={table} />
@@ -82,18 +73,16 @@ export function DataTable<TData extends { id: string }, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>

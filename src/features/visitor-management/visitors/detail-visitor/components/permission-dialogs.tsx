@@ -9,6 +9,7 @@ export function PermissionsDialogs() {
   return (
     <>
       <PermissionMutateDrawer
+      visitor={}
         key='permission-create'
         open={open === 'create'}
         onOpenChange={() => setOpen('create')}
