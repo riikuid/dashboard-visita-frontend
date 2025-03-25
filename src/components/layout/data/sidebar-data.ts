@@ -2,6 +2,7 @@ import {
   IconBug,
   IconBuildingCog,
   IconBuildings,
+  IconCards,
   IconChecklist,
   IconDevicesCog,
   IconError404,
@@ -78,7 +79,11 @@ export const sidebarData: SidebarData = {
           url: '/access-controls',
           icon: IconDevicesCog,
         },
-        
+        {
+          title: 'Card RFID',
+          url: '/card-rfid',
+          icon: IconCards,
+        },
       ],
     },
     {
