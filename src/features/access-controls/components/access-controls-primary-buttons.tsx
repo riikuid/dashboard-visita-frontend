@@ -1,9 +1,9 @@
-import { IconPlus } from '@tabler/icons-react'
+import { IconDownload, IconPlus } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
-import { useDepartments } from '../context/departments-context'
+import { useAccessControls } from '../context/access-controls-context'
 
-export function DepartmentsPrimaryButtons() {
-  const { setOpen } = useDepartments()
+export function AccessControlsPrimaryButtons() {
+  const { setOpen } = useAccessControls()
   return (
     <div className='flex gap-2'>
       <Button className='space-x-1' onClick={() => setOpen('create')}>

@@ -34,11 +34,7 @@ export const columns: ColumnDef<Department>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => (
-      <div className='max-w-32 truncate sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue('id')}
-      </div>
-    ),
+    cell: ({ row }) => <div className='w-[80px]'>{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },

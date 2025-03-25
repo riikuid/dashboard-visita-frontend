@@ -79,7 +79,6 @@ export function DepartmentsMutateDrawer({
             {isUpdate
               ? 'Update the epartment by providing necessary info.'
               : 'Add a new department by providing necessary info.'}
-            Click save when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -93,22 +92,9 @@ export function DepartmentsMutateDrawer({
               name='name'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Department Name</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder='Enter a name' />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='address'
-              render={({ field }) => (
-                <FormItem className='space-y-1'>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder='Enter a address' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

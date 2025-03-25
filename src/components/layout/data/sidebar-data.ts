@@ -3,6 +3,7 @@ import {
   IconBuildingCog,
   IconBuildings,
   IconChecklist,
+  IconDevicesCog,
   IconError404,
   IconHelp,
   IconLayoutDashboard,
@@ -16,8 +17,8 @@ import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'halim putra',
-    email: 'halimputra@icloud.com',
+    name: 'Super Admin',
+    email: 'super@admin.com',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
@@ -46,11 +47,7 @@ export const sidebarData: SidebarData = {
           url: '/',
           icon: IconLayoutDashboard,
         },
-        {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: IconChecklist,
-        },
+       
         {
           title: 'Visitor Management',
           icon: IconChecklist,
@@ -69,6 +66,28 @@ export const sidebarData: SidebarData = {
           
         },
         
+      ],
+    },
+    
+    {
+      title: 'Devices',
+      items: [
+        {
+          title: 'Access Control',
+          url: '/access-controls',
+          icon: IconDevicesCog,
+        },
+        
+      ],
+    },
+    {
+      title: 'Internal',
+      items: [
+        {
+          title: 'Departments',
+          url: '/departments',
+          icon: IconBuildingCog,
+        },
       ],
     },
     {
@@ -106,39 +125,13 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Devices',
+      title: 'Other',
       items: [
         {
-          title: 'Access Control',
+          title: 'Tasks',
           url: '/tasks',
           icon: IconChecklist,
         },
-        {
-          title: 'Errors',
-          icon: IconBug,
-          items: [
-            {
-              title: 'Not Found',
-              url: '/404',
-              icon: IconError404,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      title: 'Internal',
-      items: [
-        {
-          title: 'Departments',
-          url: '/departments',
-          icon: IconBuildingCog,
-        },
-      ],
-    },
-    {
-      title: 'Other',
-      items: [
         {
           title: 'Settings',
           icon: IconSettings,
@@ -154,6 +147,17 @@ export const sidebarData: SidebarData = {
           title: 'Help Center',
           url: '/help-center',
           icon: IconHelp,
+        },
+        {
+          title: 'Errors',
+          icon: IconBug,
+          items: [
+            {
+              title: 'Not Found',
+              url: '/404',
+              icon: IconError404,
+            },
+          ],
         },
       ],
     },

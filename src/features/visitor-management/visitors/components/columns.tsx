@@ -1,17 +1,10 @@
-import { ComponentType } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { IconCircle, IconClock, IconX } from '@tabler/icons-react'
+import { IconComponents } from '@tabler/icons-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { companies, persons, visitorStatuses } from '../data/data'
 import { Visitor } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-
-type Status = {
-  value: 'REGISTERED' | 'ON_VISIT' | 'EXPIRED'
-  label: string
-  icon: ComponentType<{ className?: string }> | null
-}
 
 const statuses = visitorStatuses
 
@@ -115,7 +108,7 @@ export const columns: ColumnDef<Visitor>[] = [
       return (
         <div className='flex w-[100px] items-center'>
           {IconComponent && (
-            <IconComponent className='mr-2 h-4 w-4 text-muted-foreground' />
+            <IconComponents className='mr-2 h-4 w-4 text-muted-foreground' />
           )}
           <span>{status.label}</span>
         </div>

@@ -42,6 +42,9 @@ const AuthenticatedDepartmentsIndexLazyImport = createFileRoute(
 const AuthenticatedAppsIndexLazyImport = createFileRoute(
   '/_authenticated/apps/',
 )()
+const AuthenticatedAccessControlsIndexLazyImport = createFileRoute(
+  '/_authenticated/access-controls/',
+)()
 const AuthenticatedSettingsAccountLazyImport = createFileRoute(
   '/_authenticated/settings/account',
 )()
@@ -158,6 +161,17 @@ const AuthenticatedAppsIndexLazyRoute = AuthenticatedAppsIndexLazyImport.update(
   import('./routes/_authenticated/apps/index.lazy').then((d) => d.Route),
 )
 
+const AuthenticatedAccessControlsIndexLazyRoute =
+  AuthenticatedAccessControlsIndexLazyImport.update({
+    id: '/access-controls/',
+    path: '/access-controls/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/access-controls/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const AuthenticatedSettingsAccountLazyRoute =
   AuthenticatedSettingsAccountLazyImport.update({
     id: '/account',
@@ -262,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountLazyImport
       parentRoute: typeof AuthenticatedSettingsRouteLazyImport
     }
+    '/_authenticated/access-controls/': {
+      id: '/_authenticated/access-controls/'
+      path: '/access-controls'
+      fullPath: '/access-controls'
+      preLoaderRoute: typeof AuthenticatedAccessControlsIndexLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/apps/': {
       id: '/_authenticated/apps/'
       path: '/apps'
@@ -343,6 +364,7 @@ const AuthenticatedSettingsRouteLazyRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteLazyRoute: typeof AuthenticatedSettingsRouteLazyRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedAccessControlsIndexLazyRoute: typeof AuthenticatedAccessControlsIndexLazyRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedDepartmentsIndexLazyRoute: typeof AuthenticatedDepartmentsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -356,6 +378,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteLazyRoute:
     AuthenticatedSettingsRouteLazyRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedAccessControlsIndexLazyRoute:
+    AuthenticatedAccessControlsIndexLazyRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedDepartmentsIndexLazyRoute:
     AuthenticatedDepartmentsIndexLazyRoute,
@@ -381,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/404': typeof errors404LazyRoute
   '/': typeof AuthenticatedIndexRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
+  '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -398,6 +423,7 @@ export interface FileRoutesByTo {
   '/404': typeof errors404LazyRoute
   '/': typeof AuthenticatedIndexRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
+  '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -418,6 +444,7 @@ export interface FileRoutesById {
   '/(errors)/404': typeof errors404LazyRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
+  '/_authenticated/access-controls/': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/departments/': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -439,6 +466,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/'
     | '/settings/account'
+    | '/access-controls'
     | '/apps'
     | '/departments'
     | '/help-center'
@@ -455,6 +483,7 @@ export interface FileRouteTypes {
     | '/404'
     | '/'
     | '/settings/account'
+    | '/access-controls'
     | '/apps'
     | '/departments'
     | '/help-center'
@@ -473,6 +502,7 @@ export interface FileRouteTypes {
     | '/(errors)/404'
     | '/_authenticated/'
     | '/_authenticated/settings/account'
+    | '/_authenticated/access-controls/'
     | '/_authenticated/apps/'
     | '/_authenticated/departments/'
     | '/_authenticated/help-center/'
@@ -522,6 +552,7 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
+        "/_authenticated/access-controls/",
         "/_authenticated/apps/",
         "/_authenticated/departments/",
         "/_authenticated/help-center/",
@@ -558,6 +589,10 @@ export const routeTree = rootRoute
     "/_authenticated/settings/account": {
       "filePath": "_authenticated/settings/account.lazy.tsx",
       "parent": "/_authenticated/settings"
+    },
+    "/_authenticated/access-controls/": {
+      "filePath": "_authenticated/access-controls/index.lazy.tsx",
+      "parent": "/_authenticated"
     },
     "/_authenticated/apps/": {
       "filePath": "_authenticated/apps/index.lazy.tsx",
