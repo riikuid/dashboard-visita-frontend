@@ -1,5 +1,6 @@
 import {
   IconBug,
+  IconBuildingCog,
   IconBuildings,
   IconChecklist,
   IconError404,
@@ -67,6 +68,7 @@ export const sidebarData: SidebarData = {
           ],
           
         },
+        
       ],
     },
     {
@@ -121,6 +123,16 @@ export const sidebarData: SidebarData = {
               icon: IconError404,
             },
           ],
+        },
+      ],
+    },
+    {
+      title: 'Internal',
+      items: [
+        {
+          title: 'Departments',
+          url: '/departments',
+          icon: IconBuildingCog,
         },
       ],
     },
