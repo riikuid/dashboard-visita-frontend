@@ -32,9 +32,13 @@ export const columns: ColumnDef<Company>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Name' />
+      <DataTableColumnHeader column={column} title='Company Name' />
     ),
-    cell: ({ row }) => <div className='w-[80px]'>{row.getValue('name')}</div>,
+    cell: ({ row }) => (
+      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+        {row.getValue('name')}
+      </div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },
@@ -44,7 +48,9 @@ export const columns: ColumnDef<Company>[] = [
       <DataTableColumnHeader column={column} title='Address' />
     ),
     cell: ({ row }) => (
-      <div className='w-[80px]'>{row.getValue('address')}</div>
+      <div className='max-w-32 truncate sm:max-w-72 md:max-w-[31rem]'>
+        {row.getValue('address')}
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,
