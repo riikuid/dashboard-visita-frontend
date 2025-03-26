@@ -1,3 +1,4 @@
+//schema.ts
 import { z } from 'zod'
 
 // We're keeping a simple non-relational schema here.
@@ -6,6 +7,6 @@ import { z } from 'zod'
 export const departmentSchema = z.object({
   id: z.string(),
   name: z.string(),
-});
+})
 
 export type Department = z.infer<typeof departmentSchema>

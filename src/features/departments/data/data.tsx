@@ -1,44 +1,25 @@
-import { Department } from './schema'
+import { z } from 'zod'
+import { departmentSchema, Department } from './schema'
 
-export const departments: Department[] = [
-  {
-    id: 'DEPT-001',
-    name: 'General Affairs',
-  },
-  {
-    id: 'DEPT-002',
-    name: 'IT Department',
-  },
-  {
-    id: 'DEPT-003',
-    name: 'Finance Department',
-  },
-  {
-    id: 'DEPT-004',
-    name: 'Human Resources',
-  },
-  {
-    id: 'DEPT-005',
-    name: 'Marketing Department',
-  },
-  {
-    id: 'DEPT-006',
-    name: 'Sales Department',
-  },
-  {
-    id: 'DEPT-007',
-    name: 'Operations Department',
-  },
-  {
-    id: 'DEPT-008',
-    name: 'Research & Development',
-  },
-  {
-    id: 'DEPT-009',
-    name: 'Legal Department',
-  },
-  {
-    id: 'DEPT-010',
-    name: 'Customer Service',
-  },
-]
+const departmentArraySchema = z.array(departmentSchema)
+
+export async function fetchDepartments(): Promise<Department[]> {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_SERVER}/department`)
+    if (!res.ok) {
+      throw new Error(`Failed to fetch departments: ${res.status}`)
+    }
+
+    const data = await res.json()
+    const validated = departmentArraySchema.parse(data)
+
+    return validated
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Error fetching departments:', error)
+    return []
+  }
+}
+
+// ❗ Ini akan menghasilkan Promise<Department[]>
+export const departments = fetchDepartments()

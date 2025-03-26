@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -8,9 +9,22 @@ import { DataTable } from './components/data-table'
 import { DepartmentsDialogs } from './components/departments-dialogs'
 import { DepartmentsPrimaryButtons } from './components/departments-primary-buttons'
 import DepartmentsProvider from './context/departments-context'
-import { departments } from './data/data'
+import { fetchDepartments } from './data/data'
+// 🔄 Ubah dari 'departments' ke 'fetchDepartments'
+import { Department } from './data/schema'
 
 export default function Departments() {
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchDepartments()
+      .then((data) => {
+        setDepartments(data)
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <DepartmentsProvider>
       <Header fixed>
@@ -30,7 +44,11 @@ export default function Departments() {
           <DepartmentsPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable data={departments} columns={columns} />
+          {loading ? (
+            <p>Loading departments...</p>
+          ) : (
+            <DataTable data={departments} columns={columns} />
+          )}
         </div>
       </Main>
 
