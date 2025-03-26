@@ -44,21 +44,48 @@ export function DepartmentsDialogs() {
                 setCurrentRow(null)
               }, 500)
             }}
-            handleConfirm={() => {
-              setOpen(null)
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-              toast({
-                title: 'The following department has been deleted:',
-                description: (
-                  <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-                    <code className='text-white'>
-                      {JSON.stringify(currentRow, null, 2)}
-                    </code>
-                  </pre>
-                ),
-              })
+            handleConfirm={async () => {
+              try {
+                const res = await fetch(
+                  `${import.meta.env.VITE_BACKEND_SERVER}/department/${currentRow.id}`,
+                  {
+                    method: 'DELETE',
+                  }
+                )
+
+                if (!res.ok) {
+                  throw new Error(
+                    `Failed to delete department. Status: ${res.status}`
+                  )
+                }
+
+                toast({
+                  title: 'The following department has been deleted:',
+                  description: (
+                    <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+                      <code className='text-white'>
+                        {JSON.stringify(currentRow, null, 2)}
+                      </code>
+                    </pre>
+                  ),
+                })
+                setTimeout(() => {
+                  window.location.reload()
+                }, 1000) // kasih delay dikit agar toast sempat terlihat
+              } catch (error) {
+                toast({
+                  title: 'Error deleting department!',
+                  description:
+                    'An error occurred while deleting the department.',
+                })
+                // eslint-disable-next-line no-console
+                console.error(error)
+              } finally {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+              }
             }}
             className='max-w-md'
             title={`Delete this department: ${currentRow.id} ?`}

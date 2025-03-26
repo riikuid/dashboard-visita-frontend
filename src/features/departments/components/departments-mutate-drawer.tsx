@@ -31,7 +31,7 @@ interface Props {
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
-  address: z.string().min(1, 'Address is required.'),
+  // address: z.string().min(1, 'Address is required.'),
 })
 type DepartmentsForm = z.infer<typeof formSchema>
 
@@ -46,22 +46,45 @@ export function DepartmentsMutateDrawer({
     resolver: zodResolver(formSchema),
     defaultValues: currentRow ?? {
       name: '',
-      address: '',
+      // address: '',
     },
   })
 
-  const onSubmit = (data: DepartmentsForm) => {
-    // do something with the form data
-    onOpenChange(false)
-    form.reset()
-    toast({
-      title: 'You submitted the following values:',
-      description: (
-        <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-          <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+  const onSubmit = async (data: DepartmentsForm) => {
+    try {
+      const res = await fetch(
+        isUpdate && currentRow
+          ? `${import.meta.env.VITE_BACKEND_SERVER}/department/${currentRow.id}`
+          : `${import.meta.env.VITE_BACKEND_SERVER}/department`,
+        {
+          method: isUpdate ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        }
+      )
+
+      if (!res.ok) throw new Error('Failed request')
+
+      toast({
+        title: 'Success!',
+        description: `Department ${isUpdate ? 'updated' : 'created'} successfully.`,
+      })
+
+      onOpenChange(false)
+      form.reset()
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: 'Something went wrong while saving the department.',
+      })
+      // eslint-disable-next-line no-console
+      console.error(error)
+    }
   }
 
   return (
@@ -77,7 +100,7 @@ export function DepartmentsMutateDrawer({
           <SheetTitle>{isUpdate ? 'Update' : 'Create'} Department</SheetTitle>
           <SheetDescription>
             {isUpdate
-              ? 'Update the epartment by providing necessary info.'
+              ? 'Update the department by providing necessary info.'
               : 'Add a new department by providing necessary info.'}
           </SheetDescription>
         </SheetHeader>
