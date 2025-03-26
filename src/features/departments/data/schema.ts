@@ -9,4 +9,9 @@ export const departmentSchema = z.object({
   name: z.string(),
 })
 
+const departmentFormData = z.object({
+  name: z.string().min(1, 'Name is required.'),
+})
+
 export type Department = z.infer<typeof departmentSchema>
+export type DepartmentFormData = z.infer<typeof departmentFormData>

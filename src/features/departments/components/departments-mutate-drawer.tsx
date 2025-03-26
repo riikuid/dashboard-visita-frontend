@@ -1,7 +1,7 @@
+import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -21,17 +21,20 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Department } from '../data/schema'
+import { Department, DepartmentFormData } from '../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentRow?: Department
+  saveDepartment: (
+    data: DepartmentFormData,
+    departmentId?: string
+  ) => Promise<boolean>
 }
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
-  // address: z.string().min(1, 'Address is required.'),
 })
 type DepartmentsForm = z.infer<typeof formSchema>
 
@@ -39,51 +42,28 @@ export function DepartmentsMutateDrawer({
   open,
   onOpenChange,
   currentRow,
+  saveDepartment,
 }: Props) {
   const isUpdate = !!currentRow
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<DepartmentsForm>({
     resolver: zodResolver(formSchema),
     defaultValues: currentRow ?? {
       name: '',
-      // address: '',
     },
   })
 
   const onSubmit = async (data: DepartmentsForm) => {
+    setIsSubmitting(true)
     try {
-      const res = await fetch(
-        isUpdate && currentRow
-          ? `${import.meta.env.VITE_BACKEND_SERVER}/department/${currentRow.id}`
-          : `${import.meta.env.VITE_BACKEND_SERVER}/department`,
-        {
-          method: isUpdate ? 'PUT' : 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        }
-      )
-
-      if (!res.ok) throw new Error('Failed request')
-
-      toast({
-        title: 'Success!',
-        description: `Department ${isUpdate ? 'updated' : 'created'} successfully.`,
-      })
-
-      onOpenChange(false)
-      form.reset()
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
-    } catch (error) {
-      toast({
-        title: 'Error!',
-        description: 'Something went wrong while saving the department.',
-      })
-      // eslint-disable-next-line no-console
-      console.error(error)
+      const success = await saveDepartment(data, currentRow?.id)
+      if (success) {
+        onOpenChange(false)
+        form.reset()
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -117,7 +97,11 @@ export function DepartmentsMutateDrawer({
                 <FormItem className='space-y-1'>
                   <FormLabel>Department Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a name' />
+                    <Input
+                      {...field}
+                      placeholder='Enter a name'
+                      disabled={isSubmitting}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -127,9 +111,40 @@ export function DepartmentsMutateDrawer({
         </Form>
         <SheetFooter className='gap-2'>
           <SheetClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant='outline' disabled={isSubmitting}>
+              Close
+            </Button>
           </SheetClose>
-          <Button form='departments-form' type='submit'>
+          <Button
+            form='departments-form'
+            type='submit'
+            disabled={isSubmitting}
+            className='relative'
+          >
+            {isSubmitting && (
+              <span className='absolute left-3'>
+                <svg
+                  className='animate-spin h-5 w-5 text-white'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  />
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  />
+                </svg>
+              </span>
+            )}
             Save changes
           </Button>
         </SheetFooter>
