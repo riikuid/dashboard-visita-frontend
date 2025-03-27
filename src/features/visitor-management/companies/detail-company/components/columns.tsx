@@ -30,6 +30,23 @@ export const columns: ColumnDef<Person>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: 'id',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='ID' />
+    ),
+    cell: ({ row }) => (
+      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+        {row.getValue('id')}
+      </div>
+    ),
+    filterFn: (row, id, filterValue) => {
+      const personId = row.getValue(id) as string
+      return personId
+        .toLowerCase()
+        .includes((filterValue as string).toLowerCase())
+    },
+  },
+  {
     accessorKey: 'name',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />

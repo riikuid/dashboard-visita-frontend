@@ -9,7 +9,7 @@ export const departmentSchema = z.object({
   name: z.string(),
 })
 
-const departmentFormData = z.object({
+export const departmentFormData = z.object({
   name: z.string().min(1, 'Name is required.'),
 })
 

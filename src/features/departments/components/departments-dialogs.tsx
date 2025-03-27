@@ -1,3 +1,4 @@
+import { toast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useDepartments } from '../context/departments-context'
 import { Department, DepartmentFormData } from '../data/schema'
@@ -61,6 +62,16 @@ export function DepartmentsDialogs({
                 setTimeout(() => {
                   setCurrentRow(null)
                 }, 500)
+                toast({
+                  title: 'The following departnebt has been deleted:',
+                  description: (
+                    <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+                      <code className='text-white'>
+                        {JSON.stringify(currentRow.name, null, 2)}
+                      </code>
+                    </pre>
+                  ),
+                })
               }
             }}
             className='max-w-md'

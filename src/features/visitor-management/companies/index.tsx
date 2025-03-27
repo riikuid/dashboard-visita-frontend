@@ -8,9 +8,12 @@ import { CompaniesDialogs } from './components/companies-dialogs'
 import { CompaniesPrimaryButtons } from './components/companies-primary-buttons'
 import { DataTable } from './components/data-table'
 import CompaniesProvider from './context/companies-context'
-import { companies } from './data/data'
+import { useCompaniesApi } from './hooks/use-companies-api'
 
 export default function Companies() {
+  const { loading, error, companies, saveCompany, deleteCompany } =
+    useCompaniesApi()
+
   return (
     <CompaniesProvider>
       <Header fixed>
@@ -32,11 +35,19 @@ export default function Companies() {
           <CompaniesPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable data={companies} columns={columns} />
+          <DataTable
+            data={companies}
+            columns={columns}
+            loading={loading}
+            error={error}
+          />
         </div>
       </Main>
 
-      <CompaniesDialogs />
+      <CompaniesDialogs
+        saveCompany={saveCompany}
+        deleteCompany={deleteCompany}
+      />
     </CompaniesProvider>
   )
 }

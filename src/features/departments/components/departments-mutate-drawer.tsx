@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -21,7 +20,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Department, DepartmentFormData } from '../data/schema'
+import {
+  Department,
+  departmentFormData,
+  DepartmentFormData,
+} from '../data/schema'
 
 interface Props {
   open: boolean
@@ -33,11 +36,6 @@ interface Props {
   ) => Promise<boolean>
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required.'),
-})
-type DepartmentsForm = z.infer<typeof formSchema>
-
 export function DepartmentsMutateDrawer({
   open,
   onOpenChange,
@@ -47,14 +45,14 @@ export function DepartmentsMutateDrawer({
   const isUpdate = !!currentRow
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<DepartmentsForm>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<DepartmentFormData>({
+    resolver: zodResolver(departmentFormData),
     defaultValues: currentRow ?? {
       name: '',
     },
   })
 
-  const onSubmit = async (data: DepartmentsForm) => {
+  const onSubmit = async (data: DepartmentFormData) => {
     setIsSubmitting(true)
     try {
       const success = await saveDepartment(data, currentRow?.id)

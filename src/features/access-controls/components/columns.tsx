@@ -2,12 +2,15 @@ import { ColumnDef } from '@tanstack/react-table'
 import { IconPlugConnectedX, IconWorld } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { departments } from '../data/data'
+import { Department } from '@/features/departments/data/schema'
+// Pastikan import Department
 import { AccessControl } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const columns: ColumnDef<AccessControl>[] = [
+export const columns = (
+  departments: Department[]
+): ColumnDef<AccessControl>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -40,13 +43,24 @@ export const columns: ColumnDef<AccessControl>[] = [
     cell: ({ row }) => <div className='max-w-[80px]'>{row.getValue('id')}</div>,
   },
   {
-    accessorKey: 'roomName',
+    accessorKey: 'name',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Room Name' />
+      <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => (
       <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue('roomName')}
+        {row.getValue('name')}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'location',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Location' />
+    ),
+    cell: ({ row }) => (
+      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+        {row.getValue('location')}
       </div>
     ),
   },
@@ -62,13 +76,13 @@ export const columns: ColumnDef<AccessControl>[] = [
       }
       return (
         <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-          {dept ? dept.name : 'Unknown'}
+          {dept.name}
         </div>
       )
     },
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'is_active',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />
     ),
@@ -76,12 +90,14 @@ export const columns: ColumnDef<AccessControl>[] = [
       return (
         <Badge variant='outline'>
           <div className='flex font-medium items-center'>
-            {row.getValue('status') === 'INACTIVE' ? (
+            {row.getValue('is_active') === false ? (
               <IconPlugConnectedX className='mr-2 h-3 w-3 text-red-500 dark:text-red-400' />
             ) : (
               <IconWorld className='mr-2 h-3 w-3 text-green-500 dark:text-green-400' />
             )}
-            <span>{row.getValue('status')}</span>
+            <span>
+              {row.getValue('is_active') === false ? 'Disconnect' : 'Connect'}
+            </span>
           </div>
         </Badge>
       )
@@ -90,7 +106,6 @@ export const columns: ColumnDef<AccessControl>[] = [
       return value.includes(row.getValue(id))
     },
   },
-
   {
     id: 'actions',
     cell: ({ row }) => <DataTableRowActions row={row} />,

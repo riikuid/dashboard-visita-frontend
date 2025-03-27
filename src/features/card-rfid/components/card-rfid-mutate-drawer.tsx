@@ -1,101 +1,67 @@
-"use client"
+'use client'
 
-import { useEffect } from "react"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { toast } from "@/hooks/use-toast"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { useCardRfid } from "../context/card-rfid-context"
-import type { CardRfid } from "../data/schema"
-
-const formSchema = z.object({
-  id: z.string().optional(),
-  cardData: z.string().min(1, "Card data is required"),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
-})
-
-type CardRfidForm = z.infer<typeof formSchema>
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button } from '@/components/ui/button'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import {
+  cardFormDataSchema,
+  type Card,
+  type CardFormData,
+} from '../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow?: CardRfid
-  mode?: "create" | "update"
+  currentRow?: Card
+
+  saveCard: (data: CardFormData, cardtId?: string) => Promise<boolean>
 }
 
-export function CardRfidMutateDrawer({ open, onOpenChange, currentRow, mode = "create" }: Props) {
-  const isUpdate = mode === "update"
-  const { addCardRfid, updateCardRfid, setOpen: setContextOpen } = useCardRfid()
+export function CardRfidMutateDrawer({
+  open,
+  onOpenChange,
+  currentRow,
+  saveCard,
+}: Props) {
+  const isUpdate = !!currentRow
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<CardRfidForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: currentRow
-      ? {
-          id: currentRow.id,
-          cardData: currentRow.cardData,
-          status: currentRow.status,
-        }
-      : {
-          cardData: "",
-          status: "ACTIVE",
-        },
+  const form = useForm<CardFormData>({
+    resolver: zodResolver(cardFormDataSchema),
+    defaultValues: currentRow ?? {
+      name: '',
+      data: '',
+    },
   })
 
-  useEffect(() => {
-    if (isUpdate && currentRow) {
-      form.reset({
-        id: currentRow.id,
-        cardData: currentRow.cardData,
-        status: currentRow.status,
-      })
-    } else {
-      form.reset({
-        cardData: "",
-        status: "ACTIVE",
-      })
-    }
-  }, [currentRow, isUpdate, form])
-
-  const onSubmit = (data: CardRfidForm) => {
-    if (mode === "create") {
-      const newCardRfid: CardRfid = {
-        id: `CARD-${Date.now().toString().slice(-6)}`,
-        cardData: data.cardData,
-        status: data.status,
+  const onSubmit = async (data: CardFormData) => {
+    setIsSubmitting(true)
+    try {
+      const success = await saveCard(data, currentRow?.id)
+      if (success) {
+        onOpenChange(false)
+        form.reset()
       }
-      addCardRfid(newCardRfid)
-      toast({
-        title: "RFID Card added successfully!",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      })
-    } else if (mode === "update" && currentRow) {
-      const updatedCardRfid: CardRfid = {
-        ...currentRow,
-        cardData: data.cardData,
-        status: data.status,
-      }
-      updateCardRfid(updatedCardRfid)
-      toast({
-        title: "RFID Card updated successfully!",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      })
+    } finally {
+      setIsSubmitting(false)
     }
-    onOpenChange(false)
-    setContextOpen(null)
-    form.reset()
   }
 
   return (
@@ -103,87 +69,91 @@ export function CardRfidMutateDrawer({ open, onOpenChange, currentRow, mode = "c
       open={open}
       onOpenChange={(v) => {
         onOpenChange(v)
-        if (!v) {
-          form.reset()
-        }
+        form.reset()
       }}
     >
-      <SheetContent className="flex flex-col p-0">
-        <SheetHeader className="text-left">
-          <SheetTitle className="p-4">{isUpdate ? "Edit RFID Card" : "Add RFID Card"}</SheetTitle>
+      <SheetContent className='flex flex-col p-0'>
+        <SheetHeader className='text-left'>
+          <SheetTitle className='p-4'>
+            {isUpdate ? 'Edit RFID Card' : 'Add RFID Card'}
+          </SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form
-            id="card-rfid-form"
+            id='card-rfid-form'
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-5 flex-1 px-4 overflow-y-auto"
+            className='space-y-5 flex-1 px-4 overflow-y-auto'
           >
             {/* Card ID Field - Read Only for Update */}
-            {isUpdate && (
-              <FormField
-                control={form.control}
-                name="id"
-                render={({ field }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel>Card ID</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             {/* Card Data Field */}
             <FormField
               control={form.control}
-              name="cardData"
+              name='name'
               render={({ field }) => (
-                <FormItem className="space-y-1">
+                <FormItem className='space-y-1'>
                   <FormLabel>Card Data</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter Card Data (Hex)" />
+                    <Input {...field} placeholder='Enter Card Data (Hex)' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Status Field */}
+            {/* Card Data Field */}
             <FormField
               control={form.control}
-              name="status"
+              name='data'
               render={({ field }) => (
-                <FormItem className="space-y-1">
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="INACTIVE">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <FormItem className='space-y-1'>
+                  <FormLabel>Card Data</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='Enter Card Data (Hex)' />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </form>
         </Form>
-        <div className="flex justify-end gap-2 p-4">
+        <div className='flex justify-end gap-2 p-4'>
           <SheetClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant='outline'>Cancel</Button>
           </SheetClose>
-          <Button form="card-rfid-form" type="submit" className="bg-purple-600 hover:bg-purple-700">
-            {isUpdate ? "Update RFID Card" : "Add RFID Card"}
+          <Button
+            form='card-rfid-form'
+            type='submit'
+            // className='bg-purple-600 hover:bg-purple-700'
+          >
+            {isSubmitting && (
+              <span className='absolute left-3'>
+                <svg
+                  className='animate-spin h-5 w-5 text-white'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  />
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  />
+                </svg>
+              </span>
+            )}
+            {isUpdate ? 'Update Card' : 'Add Card'}
           </Button>
         </div>
       </SheetContent>
     </Sheet>
   )
 }
-

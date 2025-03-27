@@ -11,7 +11,8 @@ import DepartmentsProvider from './context/departments-context'
 import { useDepartmentApi } from './hooks/use-department-api'
 
 export default function Departments() {
-  const { departments, saveDepartment, deleteDepartment } = useDepartmentApi()
+  const { loading, error, departments, saveDepartment, deleteDepartment } =
+    useDepartmentApi()
 
   return (
     <DepartmentsProvider>
@@ -32,7 +33,12 @@ export default function Departments() {
           <DepartmentsPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable columns={columns} data={departments} />
+          <DataTable
+            columns={columns}
+            data={departments}
+            loading={loading}
+            error={error}
+          />
         </div>
       </Main>
 

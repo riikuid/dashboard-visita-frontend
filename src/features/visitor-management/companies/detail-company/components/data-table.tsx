@@ -1,5 +1,4 @@
 import React from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -28,13 +27,17 @@ import { DataTableToolbar } from './data-table-toolbar'
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  loading: boolean
+  error: string | null
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
+  loading,
+  error,
 }: DataTableProps<TData, TValue>) {
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -96,7 +99,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      onClick={() => handleCellClick(cell.column.id, row)}
+                      // onClick={() => handleCellClick(cell.column.id, row)}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

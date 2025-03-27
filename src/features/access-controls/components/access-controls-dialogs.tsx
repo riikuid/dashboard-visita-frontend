@@ -1,31 +1,29 @@
 import { toast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { Department } from '@/features/tickets/data/schema'
 import { useAccessControls } from '../context/access-controls-context'
+import { AccessControl, AccessControlFormData } from '../data/schema'
 import { AccessControlsImportDialog } from './access-controls-import-dialog'
 import { AccessControlsMutateDrawer } from './access-controls-mutate-drawer'
 
-export function AccessControlsDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, deleteAccessControl } =
-    useAccessControls()
+interface Props {
+  saveAccessControl: (
+    data: AccessControlFormData,
+    accessControlId?: string
+  ) => Promise<boolean>
+  deleteAccessControl: (
+    accessControlId: string,
+    accessControlData: AccessControl
+  ) => Promise<boolean>
+  departments: Department[]
+}
 
-  const handleDelete = () => {
-    if (currentRow) {
-      deleteAccessControl(currentRow.id)
-      setOpen(null)
-      setCurrentRow(null)
-      toast({
-        title: 'Access Control deleted successfully!',
-        description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>
-              {JSON.stringify(currentRow, null, 2)}
-            </code>
-          </pre>
-        ),
-      })
-    }
-  }
-
+export function AccessControlsDialogs({
+  saveAccessControl,
+  deleteAccessControl,
+  departments,
+}: Props) {
+  const { open, setOpen, currentRow, setCurrentRow } = useAccessControls()
   return (
     <>
       {/* Drawer untuk Create */}
@@ -33,7 +31,8 @@ export function AccessControlsDialogs() {
         key='access-controls-create'
         open={open === 'create'}
         onOpenChange={(v) => setOpen(v ? 'create' : null)}
-        mode='create'
+        saveAccessControl={saveAccessControl}
+        departments={departments}
       />
 
       {/* Dialog untuk Import */}
@@ -58,7 +57,8 @@ export function AccessControlsDialogs() {
               }
             }}
             currentRow={currentRow}
-            mode='update'
+            saveAccessControl={saveAccessControl}
+            departments={departments}
           />
 
           {/* Dialog untuk Delete */}
@@ -74,7 +74,28 @@ export function AccessControlsDialogs() {
                 }, 500)
               }
             }}
-            handleConfirm={handleDelete}
+            handleConfirm={async () => {
+              const success = await deleteAccessControl(
+                currentRow.id,
+                currentRow
+              )
+              if (success) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+                toast({
+                  title: 'The following departnebt has been deleted:',
+                  description: (
+                    <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+                      <code className='text-white'>
+                        {JSON.stringify(currentRow.name, null, 2)}
+                      </code>
+                    </pre>
+                  ),
+                })
+              }
+            }}
             className='max-w-md'
             title={`Delete this access control device: ${currentRow.id}?`}
             desc={

@@ -1,78 +1,42 @@
-import React, { useState, createContext, useContext, ReactNode } from 'react'
+import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
-import { accessControls as initialAccessControls } from '../data/data'
 import { AccessControl } from '../data/schema'
 
 type AccessControlsDialogType = 'create' | 'update' | 'delete' | 'import'
 
 interface AccessControlsContextType {
-  accessControls: AccessControl[]
-  addAccessControl: (accessControl: AccessControl) => void
-  updateAccessControl: (accessControl: AccessControl) => void
-  deleteAccessControl: (id: string) => void
   open: AccessControlsDialogType | null
   setOpen: (str: AccessControlsDialogType | null) => void
   currentRow: AccessControl | null
   setCurrentRow: React.Dispatch<React.SetStateAction<AccessControl | null>>
 }
 
-const AccessControlsContext = createContext<
-  AccessControlsContextType | undefined
->(undefined)
+const AccessControlsContext =
+  React.createContext<AccessControlsContextType | null>(null)
 
 interface Props {
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export default function AccessControlsProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<AccessControlsDialogType>(null)
   const [currentRow, setCurrentRow] = useState<AccessControl | null>(null)
-  const [accessControls, setAccessControls] = useState<AccessControl[]>(
-    initialAccessControls
-  )
-
-  const addAccessControl = (accessControl: AccessControl) => {
-    setAccessControls((prev) => [...prev, accessControl])
-  }
-
-  const updateAccessControl = (updatedAccessControl: AccessControl) => {
-    setAccessControls((prev) =>
-      prev.map((ac) =>
-        ac.id === updatedAccessControl.id ? updatedAccessControl : ac
-      )
-    )
-  }
-
-  const deleteAccessControl = (id: string) => {
-    setAccessControls((prev) => prev.filter((ac) => ac.id !== id))
-  }
-
   return (
-    <AccessControlsContext.Provider
-      value={{
-        accessControls,
-        addAccessControl,
-        updateAccessControl,
-        deleteAccessControl,
-        open,
-        setOpen,
-        currentRow,
-        setCurrentRow,
-      }}
-    >
+    <AccessControlsContext value={{ open, setOpen, currentRow, setCurrentRow }}>
       {children}
-    </AccessControlsContext.Provider>
+    </AccessControlsContext>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAccessControls = () => {
-  const accessControlsContext = useContext(AccessControlsContext)
+  const cardsContext = React.useContext(AccessControlsContext)
 
-  if (!accessControlsContext) {
+  if (!cardsContext) {
     throw new Error(
-      'useAccessControls has to be used within <AccessControlsProvider>'
+      'useAccessControls has to be used within <AccessControlsContext>'
     )
   }
 
-  return accessControlsContext
+  return cardsContext
 }

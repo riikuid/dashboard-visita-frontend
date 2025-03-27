@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Department } from '../data/schema';
+import { Department, DepartmentFormData } from '../data/schema';
 import { toast } from '@/hooks/use-toast';
 
-interface DepartmentFormData {
-  name: string;
-}
+// interface DepartmentFormData {
+//   name: string;
+// }
 
 export function useDepartmentApi() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -75,7 +75,7 @@ export function useDepartmentApi() {
   );
   
   const deleteDepartment = useCallback(
-    async (departmentId: string, departmentData: Department) => {
+    async (departmentId: string) => {
       try {
         const res = await fetch(
           `${import.meta.env.VITE_BACKEND_SERVER}/department/${departmentId}`,
@@ -91,10 +91,7 @@ export function useDepartmentApi() {
         // Refresh data setelah delete
         await fetchDepartments();
 
-        toast({
-          title: 'Success!',
-          description:'The following department has ben deleted:' + departmentData.name
-        });
+        
 
         return true; // Berhasil
       } catch (err) {

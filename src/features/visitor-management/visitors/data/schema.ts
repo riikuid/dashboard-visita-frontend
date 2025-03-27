@@ -1,21 +1,5 @@
 import { z } from "zod";
 
-export const companySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  address: z.string(),
-  visit_count: z.number(),
-});
-
-export const personSchema = z.object({
-  id: z.string(),
-  company_id: z.string(),
-  name: z.string(),
-  nik: z.string().nullable(),
-  phone: z.string(),
-  visit_count: z.number(),
-});
-
 export const visitorSchema = z.object({
   id: z.string(),
   company_id: z.string(),
@@ -24,9 +8,21 @@ export const visitorSchema = z.object({
   pic_name: z.string(),
   pic_department: z.string(),
   necessary: z.string(),
-  note: z.string().nullable(),
-  status: z.enum(["invitation", "registered visitor", "visit application", "on qrcode", "on area partial", "on area full", "on location", "partial overlimit on checkpoint", "full overlimit on checkpoint", "partial out of area", "full out of area"]),
+  // note: z.string().nullable(),
+  // status: z.string(),
+  status: z.string(),
 });
+
+export const visitorFormData = z.object({
+  company_id: z.string(),
+  leader_id: z.string(),
+  arrival_date: z.date(),
+  pic_name: z.string(),
+  pic_department: z.string(),
+  necessary: z.string(),
+  status: z.string(),
+  // note: z.string().nullable(),
+})
 
 export const permissionSchema = z.object({
   id: z.string(),
@@ -35,14 +31,33 @@ export const permissionSchema = z.object({
   access_control_id: z.string(),
   start_time: z.string(),
   end_time: z.string(),
-  status: z.enum([ 'registered'
-    , 'qr ready'
-    , 'on area'
-    , 'checkpoint'
-    , 'checkpoint overlimit'
-    , 'ready to go'
-    , 'canceled'
-    , 'expired']),
+  status: z.string(),
+  // status: z.enum([ 'registered'
+  //   , 'qr ready'
+  //   , 'on area'
+  //   , 'checkpoint'
+  //   , 'checkpoint overlimit'
+  //   , 'ready to go'
+  //   , 'canceled'
+  //   , 'expired']),
+});
+
+export const permissionFormData = z.object({
+  id: z.string(),
+  person_id: z.string(),
+  visitor_id: z.string(),
+  access_control_id: z.string(),
+  start_time: z.string(),
+  end_time: z.string(),
+  status: z.string(),
+  // status: z.enum([ 'registered'
+  //   , 'qr ready'
+  //   , 'on area'
+  //   , 'checkpoint'
+  //   , 'checkpoint overlimit'
+  //   , 'ready to go'
+  //   , 'canceled'
+  //   , 'expired']),
 });
 
 export const qrSchema = z.object({
@@ -59,28 +74,16 @@ export const permissionCardSchema = z.object({
   rfid_id: z.string(),
 });
 
-export const accessControlSchema = z.object({
+export const permissionCardFormData = z.object({
   id: z.string(),
-  roomName: z.string(),
-  department_id: z.string(),
-  ipAddress: z.string(),
-  username: z.string(),
-  password: z.string(),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
+  permission_id: z.string(),
+  rfid_id: z.string(),
 });
 
-export const rfidSchema = z.object({
-  id: z.string(),
-  label: z.string(),
-  data: z.string(),
-  status: z.string(),
-});
-
-export type AccessControl = z.infer<typeof accessControlSchema>;
-export type RFID = z.infer<typeof rfidSchema>;
-export type Company = z.infer<typeof companySchema>;
-export type Person = z.infer<typeof personSchema>;
 export type Visitor = z.infer<typeof visitorSchema>;
+export type VisitorFormData = z.infer<typeof visitorFormData>;
 export type Permission = z.infer<typeof permissionSchema>;
+export type PermissionFormData = z.infer<typeof permissionFormData>;
 export type QR = z.infer<typeof qrSchema>;
 export type PermissionCard = z.infer<typeof permissionCardSchema>;
+export type permissionCardFormData = z.infer<typeof permissionCardFormData>;

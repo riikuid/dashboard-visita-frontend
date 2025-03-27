@@ -37,20 +37,31 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import {
+  Company,
+  CompanyFormData,
+  Person,
+  PersonFormData,
+} from '../../companies/data/schema'
 import { useVisitor } from '../context/visitor-context'
-import { Visitor, Company, Person } from '../data/schema'
+import { Visitor, VisitorFormData } from '../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentRow?: Visitor
+  companies: Company[]
+  persons: Person[]
+  saveVisitor: (data: VisitorFormData, visitId?: string) => Promise<boolean>
+  saveCompany: (data: CompanyFormData, companyId?: string) => Promise<boolean>
+  savePerson: (data: PersonFormData, personId?: string) => Promise<boolean>
 }
 
 const formSchema = z.object({
-  companyId: z.string().min(1, 'Please select a company or add a new one.'),
+  companyId: z.string().optional(),
   companyName: z.string().optional(),
   companyAddress: z.string().optional(),
-  leaderId: z.string().min(1, 'Please select a leader or add a new one.'),
+  leaderId: z.string().optional(),
   leaderName: z.string().optional(),
   leaderPhone: z.string().optional(),
   picName: z.string().min(1, 'PIC Name is required.'),
@@ -61,88 +72,146 @@ const formSchema = z.object({
 
 type VisitorForm = z.infer<typeof formSchema>
 
-export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
+export function VisitorMutateDrawer({
+  open,
+  onOpenChange,
+  currentRow,
+  companies,
+  persons,
+  saveVisitor,
+  saveCompany,
+  savePerson,
+}: Props) {
   const isUpdate = !!currentRow
-  const { companies, persons, addVisitor } = useVisitor()
+  const { setOpen } = useVisitor()
 
   // State untuk mengontrol apakah menampilkan form tambah perusahaan/person baru
   const [isAddingNewCompany, setIsAddingNewCompany] = useState(false)
   const [isAddingNewLeader, setIsAddingNewLeader] = useState(false)
-
   const [isCompanyPopoverOpen, setIsCompanyPopoverOpen] = useState(false)
   const [isLeaderPopoverOpen, setIsLeaderPopoverOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<VisitorForm>({
     resolver: zodResolver(formSchema),
-    defaultValues: currentRow ?? {
-      companyId: '',
-      companyName: '',
-      companyAddress: '',
-      leaderId: '',
-      leaderName: '',
-      leaderPhone: '',
-      picName: '',
-      picDepartment: '',
-      arrivalDate: undefined,
-      necessary: '',
-    },
+    defaultValues: currentRow
+      ? {
+          companyId: currentRow.company_id,
+          companyName: '',
+          companyAddress: '',
+          leaderId: currentRow.leader_id,
+          leaderName: '',
+          leaderPhone: '',
+          picName: currentRow.pic_name,
+          picDepartment: currentRow.pic_department,
+          arrivalDate: new Date(currentRow.arrival_date),
+          necessary: currentRow.necessary,
+        }
+      : {
+          companyId: '',
+          companyName: '',
+          companyAddress: '',
+          leaderId: '',
+          leaderName: '',
+          leaderPhone: '',
+          picName: '',
+          picDepartment: '',
+          arrivalDate: undefined,
+          necessary: '',
+        },
   })
 
   const selectedCompanyId = form.watch('companyId')
 
-  const onSubmit = (data: VisitorForm) => {
-    // Buat visitor baru
-    const newVisitor: Visitor = {
-      id: `VISITOR-${Date.now()}`, // Ganti dengan logika ID yang sesuai
-      company_id: isAddingNewCompany ? `COMP-${Date.now()}` : data.companyId,
-      leader_id: isAddingNewLeader ? `PERSON-${Date.now()}` : data.leaderId,
-      arrival_date: format(data.arrivalDate, 'yyyy-MM-dd'),
-      pic_name: data.picName,
-      pic_department: data.picDepartment,
-      necessary: data.necessary,
-      note: null, // Bisa ditambahkan field note jika diperlukan
-      status: 'REGISTERED',
-    }
+  const onSubmit = async (data: VisitorForm) => {
+    setIsSubmitting(true)
+    try {
+      console.log('masuk')
+      let companyId = data.companyId
+      let leaderId = data.leaderId
 
-    // Tambahkan visitor ke context
-    addVisitor(newVisitor)
-
-    // Jika menambahkan perusahaan baru, tambahkan ke daftar companies (opsional)
-    if (isAddingNewCompany && data.companyName && data.companyAddress) {
-      const newCompany: Company = {
-        id: newVisitor.company_id,
-        name: data.companyName,
-        address: data.companyAddress,
-        visit_count: 0,
+      // Jika menambahkan company baru
+      if (isAddingNewCompany && data.companyName && data.companyAddress) {
+        const newCompany: CompanyFormData = {
+          name: data.companyName,
+          address: data.companyAddress,
+        }
+        const success = await saveCompany(newCompany)
+        if (!success) {
+          toast({
+            title: 'Error!',
+            description: 'Failed to create new company.',
+            variant: 'destructive',
+          })
+          return
+        }
+        // Ambil companyId dari response atau gunakan ID sementara
+        // Untuk simplifikasi, kita asumsikan saveCompany mengembalikan ID baru melalui refetch
+        const newCompanyData = companies.find(
+          (c) => c.name === data.companyName
+        )
+        if (!newCompanyData) {
+          throw new Error('Failed to retrieve new company ID.')
+        }
+        companyId = newCompanyData.id
       }
-      // Tambahkan logika untuk menyimpan perusahaan baru (misalnya ke context atau API)
-    }
 
-    // Jika menambahkan person baru, tambahkan ke daftar persons (opsional)
-    if (isAddingNewLeader && data.leaderName && data.leaderPhone) {
-      const newPerson: Person = {
-        id: newVisitor.leader_id,
-        company_id: newVisitor.company_id,
-        name: data.leaderName,
-        nik: '', // Bisa ditambahkan field NIK jika diperlukan
-        phone: data.leaderPhone,
-        visit_count: 0,
+      // Jika menambahkan leader baru
+      if (isAddingNewLeader && data.leaderName && data.leaderPhone) {
+        const newPerson: PersonFormData = {
+          company_id: companyId!,
+          name: data.leaderName,
+          // nik: '', // Bisa ditambahkan field NIK jika diperlukan
+          phone: data.leaderPhone,
+        }
+        const success = await savePerson(newPerson)
+        if (!success) {
+          toast({
+            title: 'Error!',
+            description: 'Failed to create new leader.',
+            variant: 'destructive',
+          })
+          return
+        }
+        // Ambil leaderId dari response atau gunakan ID sementara
+        const newPersonData = persons.find(
+          (p) => p.name === data.leaderName && p.company_id === companyId
+        )
+        if (!newPersonData) {
+          throw new Error('Failed to retrieve new leader ID.')
+        }
+        leaderId = newPersonData.id
       }
-      // Tambahkan logika untuk menyimpan person baru (misalnya ke context atau API)
-    }
 
-    onOpenChange(false)
-    form.reset()
-    setIsAddingNewCompany(false)
-    setIsAddingNewLeader(false)
-    toast({
-      title: 'Visitor added successfully!',
-      description: (
-        <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-          <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    })
+      // Buat data visitor untuk disimpan
+      const visitorData: VisitorFormData = {
+        company_id: companyId!,
+        leader_id: leaderId!,
+        arrival_date: data.arrivalDate,
+        pic_name: data.picName,
+        pic_department: data.picDepartment,
+        necessary: data.necessary,
+        status: 'REGISTERED_VISITOR',
+      }
+
+      // Simpan visitor ke API
+      const success = await saveVisitor(visitorData, currentRow?.id)
+      if (success) {
+        onOpenChange(false)
+        form.reset()
+        setIsAddingNewCompany(false)
+        setIsAddingNewLeader(false)
+        setOpen(null)
+      }
+    } catch (error) {
+      toast({
+        title: 'Error!',
+        description: `Failed to ${isUpdate ? 'update' : 'create'} visitor: ${error}`,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -153,11 +222,15 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         form.reset()
         setIsAddingNewCompany(false)
         setIsAddingNewLeader(false)
+        setIsCompanyPopoverOpen(false)
+        setIsLeaderPopoverOpen(false)
       }}
     >
       <SheetContent className='flex flex-col p-0'>
         <SheetHeader className='text-left'>
-          <SheetTitle className='p-4'>Add New Visitor</SheetTitle>
+          <SheetTitle className='p-4'>
+            {isUpdate ? 'Edit Visitor' : 'Add New Visitor'}
+          </SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form
@@ -176,10 +249,11 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                   size='sm'
                   onClick={() => {
                     setIsAddingNewCompany(!isAddingNewCompany)
-                    setIsAddingNewLeader(!isAddingNewCompany)
+                    setIsAddingNewLeader(!isAddingNewCompany) // Reset leader form jika beralih
                     form.setValue('companyId', '')
                     form.setValue('companyName', '')
                     form.setValue('companyAddress', '')
+                    form.setValue('leaderId', '')
                   }}
                 >
                   {isAddingNewCompany ? 'Select Existing' : 'Add New'}
@@ -258,7 +332,7 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                                       onSelect={() => {
                                         form.setValue('companyId', company.id)
                                         form.setValue('leaderId', '') // Reset leader ketika company berubah
-                                        setIsCompanyPopoverOpen(false) // Tutup Popover setelah memilih
+                                        setIsCompanyPopoverOpen(false)
                                       }}
                                     >
                                       {company.name}
@@ -379,7 +453,7 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
                                         value={person.id}
                                         onSelect={() => {
                                           form.setValue('leaderId', person.id)
-                                          setIsLeaderPopoverOpen(false) // Tutup Popover setelah memilih
+                                          setIsLeaderPopoverOpen(false)
                                         }}
                                       >
                                         {person.name}
@@ -490,12 +564,12 @@ export function VisitorMutateDrawer({ open, onOpenChange, currentRow }: Props) {
           <SheetClose asChild>
             <Button variant='outline'>Cancel</Button>
           </SheetClose>
-          <Button
-            form='visitor-form'
-            type='submit'
-            className='bg-purple-600 hover:bg-purple-700'
-          >
-            Add Visitor
+          <Button form='visitor-form' type='submit' disabled={isSubmitting}>
+            {isSubmitting
+              ? 'Saving...'
+              : isUpdate
+                ? 'Update Visitor'
+                : 'Add Visitor'}
           </Button>
         </div>
       </SheetContent>

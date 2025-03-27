@@ -1,47 +1,29 @@
-"use client"
-
-import { Cross2Icon } from "@radix-ui/react-icons"
-import type { Table } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { DataTableFacetedFilter } from "./data-table-faceted-filter"
+import { Table } from '@tanstack/react-table'
+import { Input } from '@/components/ui/input'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  setGlobalFilter: (value: string) => void
 }
 
-export function DataTableToolbar<TData>({ table }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0
-
+export function DataTableToolbar<TData>({
+  table,
+  setGlobalFilter,
+}: DataTableToolbarProps<TData>) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
+    <div className='flex items-center justify-between'>
+      <div className='flex flex-1 items-center space-x-2'>
         <Input
-          placeholder="Search card ID or data..."
-          value={(table.getColumn("cardData")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("cardData")?.setFilterValue(event.target.value)}
-          className="h-8 w-[150px] lg:w-[250px]"
+          placeholder='Search name or data...'
+          value={table.getState().globalFilter ?? ''}
+          onChange={(event) => {
+            const value = event.target.value
+            setGlobalFilter(value)
+            table.setGlobalFilter(value)
+          }}
+          className='h-8 w-[150px] lg:w-[250px]'
         />
-
-        {table.getColumn("status") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("status")}
-            title="Status"
-            options={[
-              { value: "ACTIVE", label: "Active" },
-              { value: "INACTIVE", label: "Inactive" },
-            ]}
-          />
-        )}
-
-        {isFiltered && (
-          <Button variant="ghost" onClick={() => table.resetColumnFilters()} className="h-8 px-2 lg:px-3">
-            Reset
-            <Cross2Icon className="ml-2 h-4 w-4" />
-          </Button>
-        )}
       </div>
     </div>
   )
 }
-

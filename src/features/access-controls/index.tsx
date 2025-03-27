@@ -3,14 +3,25 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useDepartmentApi } from '../departments/hooks/use-department-api'
 import { AccessControlsDialogs } from './components/access-controls-dialogs'
 import { AccessControlsPrimaryButtons } from './components/access-controls-primary-buttons'
 import { columns } from './components/columns'
 import { DataTable } from './components/data-table'
 import AccessControlsProvider from './context/access-controls-context'
-import { accessControls } from './data/data'
+import { useAccessControlApi } from './hooks/use-access-control-api'
 
 export default function AccessControls() {
+  const {
+    loading,
+    error,
+    accessControls,
+    saveAccessControl,
+    deleteAccessControl,
+  } = useAccessControlApi()
+
+  const { departments } = useDepartmentApi()
+
   return (
     <AccessControlsProvider>
       <Header fixed>
@@ -34,11 +45,20 @@ export default function AccessControls() {
           <AccessControlsPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-x-12 lg:space-y-0'>
-          <DataTable data={accessControls} columns={columns} />
+          <DataTable
+            loading={loading}
+            error={error}
+            data={accessControls}
+            columns={columns(departments)}
+          />
         </div>
       </Main>
 
-      <AccessControlsDialogs />
+      <AccessControlsDialogs
+        saveAccessControl={saveAccessControl}
+        deleteAccessControl={deleteAccessControl}
+        departments={departments}
+      />
     </AccessControlsProvider>
   )
 }

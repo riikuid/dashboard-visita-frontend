@@ -1,14 +1,18 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { IconComponents } from '@tabler/icons-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { companies, persons, visitorStatuses } from '../data/data'
+import { Company, Person } from '../../companies/data/schema'
+import { visitorStatuses } from '../data/data'
 import { Visitor } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
 const statuses = visitorStatuses
 
-export const columns: ColumnDef<Visitor>[] = [
+export const columns = (
+  companies: Company[],
+  persons: Person[]
+): ColumnDef<Visitor>[] => [
   {
     id: 'select',
     header: ({ table }) => (

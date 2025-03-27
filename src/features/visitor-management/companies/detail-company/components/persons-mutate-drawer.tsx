@@ -1,8 +1,6 @@
-import { useEffect } from 'react'
-import { z } from 'zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -20,106 +18,46 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Person } from '../../data/schema'
-import { usePersons } from '../context/persons-context'
-
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required.'),
-  phone: z.string().min(1, 'Phone is required.'),
-  nik: z.string().optional(),
-})
-
-type PersonForm = z.infer<typeof formSchema>
+import { Person, personFormData, PersonFormData } from '../../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   companyId: string
-  mode?: 'create' | 'update'
   currentRow?: Person
+  savePerson: (data: PersonFormData, personId?: string) => Promise<boolean>
 }
 
 export function PersonsMutateDrawer({
   open,
   onOpenChange,
   companyId,
-  mode = 'create',
   currentRow,
+  savePerson,
 }: Props) {
-  const isUpdate = mode === 'update'
-  const { addPerson, updatePerson, setOpen: setContextOpen } = usePersons()
+  const isUpdate = !!currentRow
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const form = useForm<PersonForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: currentRow
-      ? {
-          name: currentRow.name,
-          phone: currentRow.phone,
-          nik: currentRow.nik || '',
-        }
-      : {
-          name: '',
-          phone: '',
-          nik: '',
-        },
+  const form = useForm<PersonFormData>({
+    resolver: zodResolver(personFormData),
+    defaultValues: currentRow ?? {
+      name: '',
+      phone: '',
+      company_id: companyId,
+    },
   })
 
-  useEffect(() => {
-    if (isUpdate && currentRow) {
-      form.reset({
-        name: currentRow.name,
-        phone: currentRow.phone,
-        nik: currentRow.nik || '',
-      })
-    } else {
-      form.reset({
-        name: '',
-        phone: '',
-        nik: '',
-      })
-    }
-  }, [currentRow, isUpdate, form])
-
-  const onSubmit = (data: PersonForm) => {
-    if (mode === 'create') {
-      const newPerson: Person = {
-        id: `PERSON-${Date.now()}`,
-        company_id: companyId,
-        name: data.name,
-        phone: data.phone,
-        nik: data.nik || '',
-        visit_count: 0,
+  const onSubmit = async (data: PersonFormData) => {
+    setIsSubmitting(true)
+    try {
+      const success = await savePerson(data, currentRow?.id)
+      if (success) {
+        onOpenChange(false)
+        form.reset()
       }
-      addPerson(newPerson)
-      toast({
-        title: 'Person added successfully!',
-        description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      })
-    } else if (mode === 'update' && currentRow) {
-      const updatedPerson: Person = {
-        ...currentRow,
-        name: data.name,
-        phone: data.phone,
-        nik: data.nik || '',
-      }
-      updatePerson(updatedPerson)
-      toast({
-        title: 'Person updated successfully!',
-        description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    onOpenChange(false)
-    setContextOpen(null)
-    form.reset()
   }
 
   return (
@@ -152,7 +90,11 @@ export function PersonsMutateDrawer({
                 <FormItem className='space-y-1'>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter Person Name' />
+                    <Input
+                      {...field}
+                      placeholder='Enter Person Name'
+                      disabled={isSubmitting}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -167,7 +109,11 @@ export function PersonsMutateDrawer({
                 <FormItem className='space-y-1'>
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter Person Phone' />
+                    <Input
+                      {...field}
+                      placeholder='Enter Person Phone'
+                      disabled={isSubmitting}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,14 +121,32 @@ export function PersonsMutateDrawer({
             />
 
             {/* NIK Field (Opsional) */}
-            <FormField
+            {/* <FormField
               control={form.control}
               name='nik'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
                   <FormLabel>NIK (Optional)</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter Person NIK' />
+                    <Input
+                      {...field}
+                      placeholder='Enter Person NIK'
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            {/* Company ID Field (Hidden) */}
+            <FormField
+              control={form.control}
+              name='company_id'
+              render={({ field }) => (
+                <FormItem className='hidden'>
+                  <FormControl>
+                    <Input {...field} type='hidden' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,13 +156,40 @@ export function PersonsMutateDrawer({
         </Form>
         <div className='flex justify-end gap-2 p-4'>
           <SheetClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant='outline' disabled={isSubmitting}>
+              Cancel
+            </Button>
           </SheetClose>
           <Button
             form='person-form'
             type='submit'
-            className='bg-purple-600 hover:bg-purple-700'
+            className='relative'
+            disabled={isSubmitting}
           >
+            {isSubmitting && (
+              <span className='absolute left-3'>
+                <svg
+                  className='animate-spin h-5 w-5 text-white'
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                >
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                  />
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  />
+                </svg>
+              </span>
+            )}
             {isUpdate ? 'Update Person' : 'Add Person'}
           </Button>
         </div>

@@ -1,17 +1,45 @@
 import { toast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import {
+  Company,
+  CompanyFormData,
+  Person,
+  PersonFormData,
+} from '../../companies/data/schema'
 import { useVisitor } from '../context/visitor-context'
+import { Visitor, VisitorFormData } from '../data/schema'
 import { VisitorImportDialog } from './visitor-import-dialog'
 import { VisitorMutateDrawer } from './visitor-mutate-drawer'
 
-export function VisitorDialogs() {
+interface Props {
+  companies: Company[]
+  persons: Person[]
+  saveCompany: (data: CompanyFormData, companyId?: string) => Promise<boolean>
+  savePerson: (data: PersonFormData, personId?: string) => Promise<boolean>
+  saveVisitor: (data: VisitorFormData, visitorId?: string) => Promise<boolean>
+
+  deleteVisitor: (visitorId: string, visitorData: Visitor) => Promise<boolean>
+}
+
+export function VisitorDialogs({
+  companies,
+  persons,
+  saveCompany,
+  savePerson,
+  saveVisitor,
+}: Props) {
   const { open, setOpen, currentRow, setCurrentRow } = useVisitor()
   return (
     <>
       <VisitorMutateDrawer
-        key='task-create'
-        open={open === 'create'}
+        companies={companies}
+        persons={persons}
         onOpenChange={() => setOpen('create')}
+        key='visitor-create'
+        open={open === 'create'}
+        saveCompany={saveCompany}
+        savePerson={savePerson}
+        saveVisitor={saveVisitor}
       />
 
       <VisitorImportDialog
@@ -25,6 +53,11 @@ export function VisitorDialogs() {
           <VisitorMutateDrawer
             key={`task-update-${currentRow.id}`}
             open={open === 'update'}
+            companies={companies}
+            persons={persons}
+            saveVisitor={saveVisitor}
+            saveCompany={saveCompany}
+            savePerson={savePerson}
             onOpenChange={() => {
               setOpen('update')
               setTimeout(() => {

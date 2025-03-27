@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { DotsHorizontalIcon } from "@radix-ui/react-icons"
-import type { Row } from "@tanstack/react-table"
-import { IconTrash } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import type { Row } from '@tanstack/react-table'
+import { IconTrash } from '@tabler/icons-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,32 +11,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useCardRfid } from "../context/card-rfid-context"
-import { cardRfidSchema } from "../data/schema"
+} from '@/components/ui/dropdown-menu'
+import { useCards } from '../context/card-rfid-context'
+import { cardSchema } from '../data/schema'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
 }
 
-export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TData>) {
-  const cardRfid = cardRfidSchema.parse(row.original)
+export function DataTableRowActions<TData>({
+  row,
+}: DataTableRowActionsProps<TData>) {
+  const cardRfid = cardSchema.parse(row.original)
 
-  const { setOpen, setCurrentRow } = useCardRfid()
+  const { setOpen, setCurrentRow } = useCards()
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
-          <DotsHorizontalIcon className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
+        <Button
+          variant='ghost'
+          className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'
+        >
+          <DotsHorizontalIcon className='h-4 w-4' />
+          <span className='sr-only'>Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
+      <DropdownMenuContent align='end' className='w-[160px]'>
         <DropdownMenuItem
           onClick={() => {
             setCurrentRow(cardRfid)
-            setOpen("update")
+            setOpen('update')
           }}
         >
           Edit
@@ -47,7 +52,7 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
         <DropdownMenuItem
           onClick={() => {
             setCurrentRow(cardRfid)
-            setOpen("delete")
+            setOpen('delete')
           }}
         >
           Delete
@@ -59,4 +64,3 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
     </DropdownMenu>
   )
 }
-
