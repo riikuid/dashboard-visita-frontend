@@ -1,16 +1,22 @@
-import { ComponentType } from 'react'
+import { format } from 'date-fns'
 import { ColumnDef } from '@tanstack/react-table'
-import { IconCircle } from '@tabler/icons-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { permissionStatuses } from '../../data/data'
-import { persons, accessControls } from '../../data/data'
-import { Permission, Person, AccessControl } from '../../data/schema'
+import { AccessControl } from '@/features/access-controls/data/schema'
+// Untuk format tanggal
+import { Permission } from '../../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
-const statuses = permissionStatuses
+// Definisikan statuses untuk kolom status
+// const statuses = [
+//   { value: 'ACTIVE', label: 'Active', icon: IconCircle },
+//   { value: 'INACTIVE', label: 'Inactive', icon: IconCircle },
+//   { value: 'EXPIRED', label: 'Expired', icon: IconCircle },
+// ] as const;
 
-export const columns: ColumnDef<Permission>[] = [
+export const columns = (
+  accessControls: AccessControl[]
+): ColumnDef<Permission>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -41,10 +47,9 @@ export const columns: ColumnDef<Permission>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />
     ),
-    cell: ({ row, column }) => {
-      const person = persons.find(
-        (person: Person) => person.id === row.getValue(column.id)
-      )
+    cell: ({ row }) => {
+      const permission = row.original as Permission // Ambil data permission langsung
+      const person = permission.person // Data person sudah ada di permission
       return (
         <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
           {person ? person.name : 'Unknown'}
@@ -52,35 +57,44 @@ export const columns: ColumnDef<Permission>[] = [
       )
     },
     filterFn: (row, id, filterValue) => {
-      const person = persons.find(
-        (person: Person) => person.id === row.getValue(id)
-      )
-      const personName = person ? person.name.toLowerCase() : ''
+      const permission = row.original as Permission
+      const personName = permission.person?.name.toLowerCase() || ''
       return personName.includes((filterValue as string).toLowerCase())
     },
   },
   {
     id: 'access_control_id',
-    accessorKey: 'access_control_id',
+    accessorKey: 'permission_access_controls', // Ubah accessorKey ke permission_access_controls
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Room Access' />
     ),
-    cell: ({ row, column }) => {
-      const room = accessControls.find(
-        (ac: AccessControl) => ac.id === row.getValue(column.id)
+    cell: ({ row }) => {
+      const permission = row.original as Permission
+      const permissionAccessControls =
+        permission.permission_access_controls || []
+
+      // Ambil semua access_control_id dari permission_access_controls
+      const accessControlIds = permissionAccessControls.map(
+        (pac) => pac.access_control_id
       )
+
+      // Cocokkan setiap access_control_id dengan accessControls untuk mendapatkan nama
+      const accessControlNames = accessControlIds
+        .map((id) => {
+          const accessControl = accessControls.find((ac) => ac.id === id)
+          return accessControl ? accessControl.name : null
+        })
+        .filter((name) => name !== null) // Filter out null values
+
+      // Tampilkan nama-nama access control, dipisahkan oleh koma
+      const displayText =
+        accessControlNames.length > 0 ? accessControlNames.join(', ') : 'N/A'
+
       return (
         <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-          {room ? room.roomName : 'Unknown'}
+          {displayText}
         </div>
       )
-    },
-    filterFn: (row, id, filterValue) => {
-      const room = accessControls.find(
-        (ac: AccessControl) => ac.id === row.getValue(id)
-      )
-      const roomName = room ? room.roomName.toLowerCase() : ''
-      return roomName.includes((filterValue as string).toLowerCase())
     },
   },
   {
@@ -88,22 +102,36 @@ export const columns: ColumnDef<Permission>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Start Time' />
     ),
-    cell: ({ row }) => (
-      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue('start_time')}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const startTime = row.getValue('start_time') as string
+      const formattedTime = startTime
+        ? // ? format(new Date(startTime), 'dd MMM yyyy HH:mm')
+          format(new Date(startTime), 'HH:mm')
+        : 'N/A'
+      return (
+        <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+          {formattedTime}
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'end_time',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='End Time' />
     ),
-    cell: ({ row }) => (
-      <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {row.getValue('end_time')}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const endTime = row.getValue('end_time') as string
+      const formattedTime = endTime
+        ? // ? format(new Date(endTime), 'dd MMM yyyy HH:mm')
+          format(new Date(endTime), 'HH:mm')
+        : 'N/A'
+      return (
+        <div className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+          {formattedTime}
+        </div>
+      )
+    },
   },
   {
     accessorKey: 'status',
@@ -111,21 +139,9 @@ export const columns: ColumnDef<Permission>[] = [
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue('status')
-      )
-      if (!status) {
-        return null
-      }
-      const IconComponent = status.icon
       return (
         <div className='flex w-[100px] items-center'>
-          {IconComponent ? (
-            <IconComponent className='mr-2 h-4 w-4 text-muted-foreground' />
-          ) : (
-            <IconCircle className='mr-2 h-4 w-4 text-muted-foreground' />
-          )}
-          <span>{status.label}</span>
+          {row.getValue('status')}
         </div>
       )
     },

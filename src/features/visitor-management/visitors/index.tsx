@@ -15,8 +15,8 @@ import { useVisitorsApi } from './hooks/use-visitors-api'
 export default function Visitors() {
   const { visitors, saveVisitor, deleteVisitor, error, loading } =
     useVisitorsApi()
-  const { companies, saveCompany } = useCompaniesApi()
-  const { persons, savePerson } = usePersonsApi()
+  const { companies, saveVisitorCompany } = useCompaniesApi()
+  const { persons, saveVisitorPerson } = usePersonsApi()
 
   return (
     <VisitorProvider>
@@ -50,8 +50,8 @@ export default function Visitors() {
         companies={companies}
         persons={persons}
         saveVisitor={saveVisitor}
-        saveCompany={saveCompany}
-        savePerson={savePerson}
+        saveCompany={saveVisitorCompany}
+        savePerson={saveVisitorPerson}
         deleteVisitor={deleteVisitor}
       />
     </VisitorProvider>

@@ -35,15 +35,34 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { accessControls } from '../../data/data'
-import { Permission, Person, AccessControl, Visitor } from '../../data/schema'
-import { usePermissions } from '../context/permissions-context'
+import { AccessControl } from '@/features/access-controls/data/schema'
+import {
+  Person,
+  PersonFormData,
+} from '@/features/visitor-management/companies/data/schema'
+import {
+  Permission,
+  PermissionAccessControlFormData,
+  PermissionFormData,
+  Visitor,
+} from '../../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
+  currentRow?: Permission
+  persons: Person[]
   visitor: Visitor
-  mode?: 'create' | 'update'
+  savePerson: (
+    data: PersonFormData,
+    personId?: string
+  ) => Promise<Person | boolean>
+  savePermission: (
+    permissionData: PermissionFormData,
+    permissionAccessControlData: PermissionAccessControlFormData,
+    permissionId?: string
+  ) => Promise<boolean>
+  accessControls: AccessControl[]
 }
 
 const formSchema = z.object({
@@ -57,6 +76,7 @@ const formSchema = z.object({
   endTime: z
     .string()
     .regex(/^\d{2}:\d{2}$/, 'End time must be in HH:mm format.'),
+  status: z.string().optional(),
 })
 
 type PermissionForm = z.infer<typeof formSchema>
@@ -64,22 +84,20 @@ type PermissionForm = z.infer<typeof formSchema>
 export function PermissionMutateDrawer({
   open,
   onOpenChange,
+  currentRow,
+  persons,
   visitor,
-  mode = 'create',
+  savePerson,
+  savePermission,
+  accessControls,
 }: Props) {
-  const {
-    addPermission,
-    updatePermission,
-    addPerson,
-    persons,
-    setOpen: setContextOpen,
-    currentRow,
-  } = usePermissions()
+  const isUpdate = !!currentRow
 
   const [isAddingNewPerson, setIsAddingNewPerson] = useState(false)
   const [isPersonPopoverOpen, setIsPersonPopoverOpen] = useState(false)
   const [isAccessControlPopoverOpen, setIsAccessControlPopoverOpen] =
     useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<PermissionForm>({
     resolver: zodResolver(formSchema),
@@ -90,18 +108,27 @@ export function PermissionMutateDrawer({
       accessControlId: '',
       startTime: '',
       endTime: '',
+      status: 'REGISTERED',
     },
   })
 
   useEffect(() => {
-    if (mode === 'update' && currentRow) {
+    if (isUpdate && currentRow) {
+      const startTime = currentRow.start_time
+        ? new Date(currentRow.start_time).toTimeString().slice(0, 5)
+        : ''
+      const endTime = currentRow.end_time
+        ? new Date(currentRow.end_time).toTimeString().slice(0, 5)
+        : ''
       form.reset({
         personId: currentRow.person_id,
         personName: '',
         personPhone: '',
-        accessControlId: currentRow.access_control_id,
-        startTime: currentRow.start_time,
-        endTime: currentRow.end_time,
+        accessControlId:
+          currentRow.permission_access_controls?.[0]?.access_control_id || '',
+        startTime,
+        endTime,
+        status: currentRow.status,
       })
     } else {
       form.reset({
@@ -111,81 +138,78 @@ export function PermissionMutateDrawer({
         accessControlId: '',
         startTime: '',
         endTime: '',
+        status: 'REGISTERED',
       })
     }
-  }, [currentRow, mode, form])
+  }, [currentRow, isUpdate, form])
 
-  const onSubmit = (data: PermissionForm) => {
-    if (mode === 'create') {
-      const newPermission: Permission = {
-        id: `PERM-${Date.now()}`,
-        person_id: isAddingNewPerson ? `PERSON-${Date.now()}` : data.personId,
+  const onSubmit = async (data: PermissionForm) => {
+    setIsSubmitting(true)
+    console.log(visitor.company_id)
+    try {
+      const arrivalDate = new Date(visitor.arrival_date)
+      const arrivalDateString = arrivalDate.toISOString().split('T')[0]
+      const startTime = `${arrivalDateString}T${data.startTime}:00.000Z`
+      const endTime = `${arrivalDateString}T${data.endTime}:00.000Z`
+
+      let personId = data.personId
+
+      // Jika menambahkan person baru
+      if (isAddingNewPerson && data.personName && data.personPhone) {
+        const newPersonData: PersonFormData = {
+          company_id: visitor.company_id,
+          name: data.personName,
+          nik: '',
+          phone: data.personPhone,
+        }
+        const result = await savePerson(newPersonData)
+        if (!result || typeof result === 'boolean') {
+          toast({
+            title: 'Error!',
+            description: 'Failed to create new person.',
+            variant: 'destructive',
+          })
+          return
+        }
+        personId = result.id
+      }
+
+      // Buat data permission
+      const permissionData = {
+        person_id: personId,
         visitor_id: visitor.id,
+        start_time: startTime,
+        end_time: endTime,
+        status: data.status || 'REGISTERED',
+      }
+
+      // Buat data permission access control
+      const permissionAccessControlData: PermissionAccessControlFormData = {
+        permission_id: null,
         access_control_id: data.accessControlId,
-        start_time: data.startTime,
-        end_time: data.endTime,
-        status: 'registered',
       }
 
-      addPermission(newPermission)
+      // Simpan permission
+      const success = await savePermission(
+        permissionData,
+        permissionAccessControlData,
+        isUpdate ? currentRow.id : undefined
+      )
 
-      if (isAddingNewPerson && data.personName && data.personPhone) {
-        const newPerson: Person = {
-          id: newPermission.person_id,
-          company_id: visitor.company_id,
-          name: data.personName,
-          nik: '',
-          phone: data.personPhone,
-          visit_count: 0,
-        }
-        addPerson(newPerson)
+      if (success) {
+        onOpenChange(false)
+        form.reset()
+        setIsAddingNewPerson(false)
       }
-
+    } catch (error) {
       toast({
-        title: 'Permission added successfully!',
-        description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
+        title: 'Error!',
+        description: `Failed to ${isUpdate ? 'update' : 'create'} permission: ${error}`,
+        variant: 'destructive',
       })
-    } else if (mode === 'update' && currentRow) {
-      const updatedPermission: Permission = {
-        ...currentRow,
-        person_id: data.personId,
-        access_control_id: data.accessControlId,
-        start_time: data.startTime,
-        end_time: data.endTime,
-      }
-
-      updatePermission(updatedPermission)
-
-      if (isAddingNewPerson && data.personName && data.personPhone) {
-        const newPerson: Person = {
-          id: updatedPermission.person_id,
-          company_id: visitor.company_id,
-          name: data.personName,
-          nik: '',
-          phone: data.personPhone,
-          visit_count: 0,
-        }
-        addPerson(newPerson)
-      }
-
-      toast({
-        title: 'Permission updated successfully!',
-        description: (
-          <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-            <code className='text-white'>{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      })
+    } finally {
+      setIsSubmitting(false)
     }
-
-    onOpenChange(false)
-    setContextOpen(null)
-    form.reset()
-    setIsAddingNewPerson(false)
   }
 
   return (
@@ -204,7 +228,7 @@ export function PermissionMutateDrawer({
       <SheetContent className='flex flex-col p-0'>
         <SheetHeader className='text-left'>
           <SheetTitle className='p-4'>
-            {mode === 'create' ? 'Add Permission' : 'Edit Permission'}
+            {isUpdate ? 'Edit Permission' : 'Add Permission'}
           </SheetTitle>
         </SheetHeader>
         <Form {...form}>
@@ -227,7 +251,6 @@ export function PermissionMutateDrawer({
                     form.setValue('personId', '')
                     form.setValue('personName', '')
                     form.setValue('personPhone', '')
-                    setIsPersonPopoverOpen(false)
                   }}
                 >
                   {isAddingNewPerson ? 'Select Existing' : 'Add New'}
@@ -284,8 +307,7 @@ export function PermissionMutateDrawer({
                             >
                               {field.value
                                 ? persons.find(
-                                    (person: Person) =>
-                                      person.id === field.value
+                                    (person) => person.id === field.value
                                   )?.name
                                 : 'Select Person'}
                               <span className='ml-2'>▼</span>
@@ -298,24 +320,19 @@ export function PermissionMutateDrawer({
                             <CommandList>
                               <CommandEmpty>No person found.</CommandEmpty>
                               <CommandGroup>
-                                {persons?.length > 0 ? (
-                                  persons
-                                    .filter(
-                                      (person: Person) =>
-                                        person.company_id === visitor.company_id
-                                    )
-                                    .map((person: Person) => (
-                                      <CommandItem
-                                        key={person.id}
-                                        value={person.id}
-                                        onSelect={() => {
-                                          form.setValue('personId', person.id)
-                                          setIsPersonPopoverOpen(false)
-                                        }}
-                                      >
-                                        {person.name}
-                                      </CommandItem>
-                                    ))
+                                {persons.length > 0 ? (
+                                  persons.map((person) => (
+                                    <CommandItem
+                                      key={person.id}
+                                      value={person.id}
+                                      onSelect={() => {
+                                        form.setValue('personId', person.id)
+                                        setIsPersonPopoverOpen(false)
+                                      }}
+                                    >
+                                      {person.name}
+                                    </CommandItem>
+                                  ))
                                 ) : (
                                   <CommandEmpty>
                                     No person available.
@@ -357,8 +374,8 @@ export function PermissionMutateDrawer({
                           >
                             {field.value
                               ? accessControls.find(
-                                  (ac: AccessControl) => ac.id === field.value
-                                )?.roomName
+                                  (ac) => ac.id === field.value
+                                )?.name
                               : 'Select Room'}
                             <span className='ml-2'>▼</span>
                           </Button>
@@ -370,8 +387,8 @@ export function PermissionMutateDrawer({
                           <CommandList>
                             <CommandEmpty>No room found.</CommandEmpty>
                             <CommandGroup>
-                              {accessControls?.length > 0 ? (
-                                accessControls.map((ac: AccessControl) => (
+                              {accessControls.length > 0 ? (
+                                accessControls.map((ac) => (
                                   <CommandItem
                                     key={ac.id}
                                     value={ac.id}
@@ -380,7 +397,7 @@ export function PermissionMutateDrawer({
                                       setIsAccessControlPopoverOpen(false)
                                     }}
                                   >
-                                    {ac.roomName}
+                                    {ac.name}
                                   </CommandItem>
                                 ))
                               ) : (
@@ -468,18 +485,37 @@ export function PermissionMutateDrawer({
                 )}
               />
             </div>
+
+            {/* Status Field (hanya untuk update) */}
+            {isUpdate && (
+              <div className='space-y-2 px-4'>
+                <FormField
+                  control={form.control}
+                  name='status'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder='Enter status' />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </form>
         </Form>
         <div className='flex justify-end gap-2 p-4'>
           <SheetClose asChild>
             <Button variant='outline'>Cancel</Button>
           </SheetClose>
-          <Button
-            form='permission-form'
-            type='submit'
-            className='bg-purple-600 hover:bg-purple-700'
-          >
-            {mode === 'create' ? 'Add Permission' : 'Update Permission'}
+          <Button form='permission-form' type='submit' disabled={isSubmitting}>
+            {isSubmitting
+              ? 'Saving...'
+              : isUpdate
+                ? 'Update Permission'
+                : 'Add Permission'}
           </Button>
         </div>
       </SheetContent>

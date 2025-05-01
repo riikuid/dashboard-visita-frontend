@@ -27,13 +27,64 @@ export function usePersonsApi() {
     }
   }, []);
 
-  // Create or update company
-  const savePerson = useCallback(
-    async (data: PersonFormData, companyId?: string) => {
+  const saveVisitorPerson = useCallback(
+    async (data: PersonFormData, personId?: string) => {
       try {
-        const isUpdate = !!companyId;
+        const isUpdate = !!personId;
         const url = isUpdate
-          ? `${import.meta.env.VITE_BACKEND_SERVER}/person/${companyId}`
+          ? `${import.meta.env.VITE_BACKEND_SERVER}/person/${personId}`
+          : `${import.meta.env.VITE_BACKEND_SERVER}/person`;
+        const method = isUpdate ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to ${isUpdate ? 'update' : 'create'} person: ${res.status}`);
+        }
+
+        // Ambil data person yang baru dibuat dari response (untuk POST)
+        let newPerson: Person | null = null;
+        if (!isUpdate) {
+          newPerson = await res.json();
+          if (!newPerson || !newPerson.id) {
+            throw new Error('API did not return a valid person object.');
+          }
+        }
+
+        // Refresh data setelah create/update
+        await fetchPersons();
+
+        toast({
+          title: 'Success!',
+          description: `Person ${isUpdate ? 'updated' : 'created'} successfully.`,
+        });
+
+        return isUpdate ? true : newPerson; // Kembalikan true untuk update, atau object person untuk create
+      } catch (err) {
+        setErrorSnack(`Failed to ${personId ? 'update' : 'create'} person`);
+        toast({
+          title: 'Error!',
+          description: `Something went wrong while ${personId ? 'updating' : 'creating'} the person.\n ${err}`,
+        });
+        return false; // Gagal
+      }
+    },
+    [fetchPersons]
+  );
+
+  // Create or update person
+  const savePerson = useCallback(
+    async (data: PersonFormData, personId?: string) => {
+      try {
+        const isUpdate = !!personId;
+        const url = isUpdate
+          ? `${import.meta.env.VITE_BACKEND_SERVER}/person/${personId}`
           : `${import.meta.env.VITE_BACKEND_SERVER}/person`;
         const method = isUpdate ? 'PUT' : 'POST';
 
@@ -59,10 +110,10 @@ export function usePersonsApi() {
 
         return true; // Berhasil
       } catch (err) {
-        setErrorSnack(`Failed to ${companyId ? 'update' : 'create'} company`);
+        setErrorSnack(`Failed to ${personId ? 'update' : 'create'} person`);
         toast({
           title: 'Error!',
-          description: `Something went wrong while ${companyId ? 'updating' : 'creating'} the company.\n ${err}`,
+          description: `Something went wrong while ${personId ? 'updating' : 'creating'} the person.\n ${err}`,
         });
         // eslint-disable-next-line no-console
         console.error(err);
@@ -71,6 +122,8 @@ export function usePersonsApi() {
     },
     [fetchPersons]
   );
+
+  
   
   const deletePerson = useCallback(
     async (personId: string, persondata: Person) => {
@@ -113,5 +166,5 @@ export function usePersonsApi() {
     fetchPersons();
   }, [fetchPersons]);
 
-  return { persons, loading, error, errorSnack, savePerson, deletePerson };
+  return { persons, loading, error, errorSnack, saveVisitorPerson, savePerson, deletePerson };
 }

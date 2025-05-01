@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Table,
   TableBody,
@@ -28,11 +29,15 @@ import { DataTableToolbar } from './data-table-toolbar'
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  loading: boolean
+  error: string | null
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
+  loading,
+  error,
 }: DataTableProps<TData, TValue>) {
   const navigate = useNavigate()
   const [rowSelection, setRowSelection] = React.useState({})
@@ -87,7 +92,25 @@ export function DataTable<TData extends { id: string }, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className='items-center justify-center h-24 text-center'
+                >
+                  <Spinner size={'small'} /> Loading
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className='h-24 text-center'
+                >
+                  {error}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -96,7 +119,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      onClick={() => handleCellClick(cell.column.id, row)}
+                      // onClick={() => handleCellClick(cell.column.id, row)}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,

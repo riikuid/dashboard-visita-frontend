@@ -1,31 +1,71 @@
 import { toast } from '@/hooks/use-toast'
 import { ConfirmDialog } from '@/components/confirm-dialog'
+import { AccessControl } from '@/features/access-controls/data/schema'
+import {
+  Person,
+  PersonFormData,
+} from '@/features/visitor-management/companies/data/schema'
+import {
+  Permission,
+  PermissionAccessControlFormData,
+  PermissionFormData,
+  Visitor,
+} from '../../data/schema'
 import { usePermissions } from '../context/permissions-context'
-import { PermissionsImportDialog } from './permission-import-dialog'
 import { PermissionMutateDrawer } from './permission-mutate-drawer'
 
-export function PermissionsDialogs() {
+interface Props {
+  persons: Person[]
+  visitor: Visitor
+  accessControls: AccessControl[]
+  savePerson: (
+    data: PersonFormData,
+    personId?: string
+  ) => Promise<Person | boolean>
+  savePermission: (
+    permissionData: PermissionFormData,
+    permissionAccessControlData: PermissionAccessControlFormData,
+    permissionId?: string
+  ) => Promise<boolean>
+
+  deletePermission: (
+    permissionId: string,
+    permissionData: Permission
+  ) => Promise<boolean>
+}
+
+export function PermissionDialogs({
+  visitor,
+  accessControls,
+  persons,
+  savePerson,
+  savePermission,
+  deletePermission,
+}: Props) {
   const { open, setOpen, currentRow, setCurrentRow } = usePermissions()
   return (
     <>
       <PermissionMutateDrawer
-      visitor={}
+        accessControls={accessControls}
+        visitor={visitor}
+        persons={persons}
+        onOpenChange={() => setOpen('create')}
         key='permission-create'
         open={open === 'create'}
-        onOpenChange={() => setOpen('create')}
-      />
-
-      <PermissionsImportDialog
-        key='permissions-import'
-        open={open === 'import'}
-        onOpenChange={() => setOpen('import')}
+        savePerson={savePerson}
+        savePermission={savePermission}
       />
 
       {currentRow && (
         <>
           <PermissionMutateDrawer
-            key={`permission-update-${currentRow.id}`}
+            key={`task-update-${currentRow.id}`}
             open={open === 'update'}
+            accessControls={accessControls}
+            visitor={visitor}
+            persons={persons}
+            savePermission={savePermission}
+            savePerson={savePerson}
             onOpenChange={() => {
               setOpen('update')
               setTimeout(() => {
@@ -36,7 +76,7 @@ export function PermissionsDialogs() {
           />
 
           <ConfirmDialog
-            key='permission-delete'
+            key='task-delete'
             destructive
             open={open === 'delete'}
             onOpenChange={() => {
@@ -45,27 +85,30 @@ export function PermissionsDialogs() {
                 setCurrentRow(null)
               }, 500)
             }}
-            handleConfirm={() => {
-              setOpen(null)
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-              toast({
-                title: 'The following permission has been deleted:',
-                description: (
-                  <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-                    <code className='text-white'>
-                      {JSON.stringify(currentRow, null, 2)}
-                    </code>
-                  </pre>
-                ),
-              })
+            handleConfirm={async () => {
+              const success = await deletePermission(currentRow.id, currentRow)
+              if (success) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+                // toast({
+                //   title: 'The following visitor has been deleted:',
+                //   description: (
+                //     <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+                //       <code className='text-white'>
+                //         {JSON.stringify(currentRow, null, 2)}
+                //       </code>
+                //     </pre>
+                //   ),
+                // })
+              }
             }}
             className='max-w-md'
-            title={`Delete this permission: ${currentRow.id} ?`}
+            title={`Delete this task: ${currentRow.id} ?`}
             desc={
               <>
-                You are about to delete a permission with the ID{' '}
+                You are about to delete a task with the ID{' '}
                 <strong>{currentRow.id}</strong>. <br />
                 This action cannot be undone.
               </>

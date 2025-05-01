@@ -77,7 +77,7 @@ export function useVisitorsApi() {
     async (visitId: string, visitData: Visitor) => {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_SERVER}/visit/${visitId}`,
+          `${import.meta.env.VITE_BACKEND_SERVER}/visitor/${visitId}`,
           {
             method: 'DELETE',
           }
@@ -92,15 +92,15 @@ export function useVisitorsApi() {
 
         toast({
           title: 'Success!',
-          description:`The following visit has ben deleted: ${visitData.id} - ${visitData.arrival_date}`
+          description:`The following visitor has ben deleted: ${visitData.id} - ${visitData.company?.name}`
         });
 
         return true; // Berhasil
       } catch (err) {
-        setErrorSnack(`Failed to delete visit: ${visitId}`);
+        setErrorSnack(`Failed to delete visitor: ${visitId}`);
         toast({
           title: 'Error!',
-          description: 'Something went wrong while deleting the visit.',
+          description: 'Something went wrong while deleting the visitor.',
         });
         // eslint-disable-next-line no-console
         console.error(err);

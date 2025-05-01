@@ -1,26 +1,19 @@
-import React, { useState, useContext, createContext } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
-import {
-  permissions as initialPermissions,
-  persons as initialPersons,
-} from '../../data/data'
-import { Permission, Person } from '../../data/schema'
+import { Permission } from '../../data/schema'
 
+// Definisikan tipe untuk dialog
 type PermissionsDialogType = 'create' | 'update' | 'delete' | 'import'
 
+// Definisikan tipe untuk context
 interface PermissionsContextType {
   open: PermissionsDialogType | null
   setOpen: (str: PermissionsDialogType | null) => void
   currentRow: Permission | null
   setCurrentRow: React.Dispatch<React.SetStateAction<Permission | null>>
-  permissions: Permission[]
-  persons: Person[]
-  addPermission: (permission: Permission) => void
-  updatePermission: (permission: Permission) => void
-  deletePermission: (id: string) => void
-  addPerson: (person: Person) => void
 }
 
+// Buat context
 const PermissionsContext = createContext<PermissionsContextType | null>(null)
 
 interface Props {
@@ -28,31 +21,9 @@ interface Props {
 }
 
 export default function PermissionsProvider({ children }: Props) {
+  // State untuk dialog
   const [open, setOpen] = useDialogState<PermissionsDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Permission | null>(null)
-  const [permissions, setPermissions] =
-    useState<Permission[]>(initialPermissions)
-  const [persons, setPersons] = useState<Person[]>(initialPersons)
-
-  const addPermission = (permission: Permission) => {
-    setPermissions((prev) => [...prev, permission])
-  }
-
-  const updatePermission = (updatedPermission: Permission) => {
-    setPermissions((prev) =>
-      prev.map((perm) =>
-        perm.id === updatedPermission.id ? updatedPermission : perm
-      )
-    )
-  }
-
-  const deletePermission = (id: string) => {
-    setPermissions((prev) => prev.filter((perm) => perm.id !== id))
-  }
-
-  const addPerson = (person: Person) => {
-    setPersons((prev) => [...prev, person])
-  }
 
   return (
     <PermissionsContext.Provider
@@ -61,12 +32,6 @@ export default function PermissionsProvider({ children }: Props) {
         setOpen,
         currentRow,
         setCurrentRow,
-        permissions,
-        persons,
-        addPermission,
-        updatePermission,
-        deletePermission,
-        addPerson,
       }}
     >
       {children}
@@ -75,13 +40,13 @@ export default function PermissionsProvider({ children }: Props) {
 }
 
 export const usePermissions = () => {
-  const permissionContext = useContext(PermissionsContext)
+  const permissionsContext = useContext(PermissionsContext)
 
-  if (!permissionContext) {
+  if (!permissionsContext) {
     throw new Error(
       'usePermissions has to be used within <PermissionsProvider>'
     )
   }
 
-  return permissionContext
+  return permissionsContext
 }

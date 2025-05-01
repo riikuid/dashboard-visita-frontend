@@ -14,8 +14,14 @@ import { VisitorMutateDrawer } from './visitor-mutate-drawer'
 interface Props {
   companies: Company[]
   persons: Person[]
-  saveCompany: (data: CompanyFormData, companyId?: string) => Promise<boolean>
-  savePerson: (data: PersonFormData, personId?: string) => Promise<boolean>
+  saveCompany: (
+    data: CompanyFormData,
+    companyId?: string
+  ) => Promise<boolean | Company | null>
+  savePerson: (
+    data: PersonFormData,
+    personId?: string
+  ) => Promise<boolean | Person | null>
   saveVisitor: (data: VisitorFormData, visitorId?: string) => Promise<boolean>
 
   deleteVisitor: (visitorId: string, visitorData: Visitor) => Promise<boolean>
@@ -27,6 +33,7 @@ export function VisitorDialogs({
   saveCompany,
   savePerson,
   saveVisitor,
+  deleteVisitor,
 }: Props) {
   const { open, setOpen, currentRow, setCurrentRow } = useVisitor()
   return (
@@ -77,21 +84,24 @@ export function VisitorDialogs({
                 setCurrentRow(null)
               }, 500)
             }}
-            handleConfirm={() => {
-              setOpen(null)
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-              toast({
-                title: 'The following task has been deleted:',
-                description: (
-                  <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
-                    <code className='text-white'>
-                      {JSON.stringify(currentRow, null, 2)}
-                    </code>
-                  </pre>
-                ),
-              })
+            handleConfirm={async () => {
+              const success = await deleteVisitor(currentRow.id, currentRow)
+              if (success) {
+                setOpen(null)
+                setTimeout(() => {
+                  setCurrentRow(null)
+                }, 500)
+                // toast({
+                //   title: 'The following visitor has been deleted:',
+                //   description: (
+                //     <pre className='mt-2 w-[340px] rounded-md bg-slate-950 p-4'>
+                //       <code className='text-white'>
+                //         {JSON.stringify(currentRow, null, 2)}
+                //       </code>
+                //     </pre>
+                //   ),
+                // })
+              }
             }}
             className='max-w-md'
             title={`Delete this task: ${currentRow.id} ?`}

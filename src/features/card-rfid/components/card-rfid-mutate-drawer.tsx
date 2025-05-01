@@ -92,7 +92,7 @@ export function CardRfidMutateDrawer({
               name='name'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Card Data</FormLabel>
+                  <FormLabel>Label or Name</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder='Enter Card Data (Hex)' />
                   </FormControl>

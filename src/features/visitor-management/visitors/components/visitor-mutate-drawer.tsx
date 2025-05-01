@@ -53,8 +53,14 @@ interface Props {
   companies: Company[]
   persons: Person[]
   saveVisitor: (data: VisitorFormData, visitId?: string) => Promise<boolean>
-  saveCompany: (data: CompanyFormData, companyId?: string) => Promise<boolean>
-  savePerson: (data: PersonFormData, personId?: string) => Promise<boolean>
+  saveCompany: (
+    data: CompanyFormData,
+    companyId?: string
+  ) => Promise<boolean | Company | null>
+  savePerson: (
+    data: PersonFormData,
+    personId?: string
+  ) => Promise<boolean | Person | null>
 }
 
 const formSchema = z.object({
@@ -126,7 +132,6 @@ export function VisitorMutateDrawer({
   const onSubmit = async (data: VisitorForm) => {
     setIsSubmitting(true)
     try {
-      console.log('masuk')
       let companyId = data.companyId
       let leaderId = data.leaderId
 
@@ -136,8 +141,8 @@ export function VisitorMutateDrawer({
           name: data.companyName,
           address: data.companyAddress,
         }
-        const success = await saveCompany(newCompany)
-        if (!success) {
+        const result = await saveCompany(newCompany)
+        if (!result || typeof result === 'boolean') {
           toast({
             title: 'Error!',
             description: 'Failed to create new company.',
@@ -145,15 +150,7 @@ export function VisitorMutateDrawer({
           })
           return
         }
-        // Ambil companyId dari response atau gunakan ID sementara
-        // Untuk simplifikasi, kita asumsikan saveCompany mengembalikan ID baru melalui refetch
-        const newCompanyData = companies.find(
-          (c) => c.name === data.companyName
-        )
-        if (!newCompanyData) {
-          throw new Error('Failed to retrieve new company ID.')
-        }
-        companyId = newCompanyData.id
+        companyId = result.id
       }
 
       // Jika menambahkan leader baru
@@ -164,23 +161,16 @@ export function VisitorMutateDrawer({
           // nik: '', // Bisa ditambahkan field NIK jika diperlukan
           phone: data.leaderPhone,
         }
-        const success = await savePerson(newPerson)
-        if (!success) {
+        const result = await savePerson(newPerson)
+        if (!result || typeof result === 'boolean') {
           toast({
             title: 'Error!',
-            description: 'Failed to create new leader.',
+            description: 'Failed to create new person.',
             variant: 'destructive',
           })
           return
         }
-        // Ambil leaderId dari response atau gunakan ID sementara
-        const newPersonData = persons.find(
-          (p) => p.name === data.leaderName && p.company_id === companyId
-        )
-        if (!newPersonData) {
-          throw new Error('Failed to retrieve new leader ID.')
-        }
-        leaderId = newPersonData.id
+        leaderId = result.id // Pastikan result bukan null
       }
 
       // Buat data visitor untuk disimpan

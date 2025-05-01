@@ -13,7 +13,7 @@ export const personSchema = z.object({
   id: z.string(),
   company_id: z.string(),
   name: z.string(),
-  // nik: z.string().nullable(),
+  nik: z.string().nullable(),
   phone: z.string(),
   visit_count: z.number(),
 });
@@ -26,7 +26,7 @@ export const companyFormData = z.object({
 export const personFormData = z.object({
   name: z.string().min(5, 'Name is required.'),
   phone: z.string().min(5, 'Phone number is required.'),
-  // nik: z.string().nullable().optional(),
+  nik: z.string().nullable().optional(),
   company_id: z.string().min(1, 'Company must selected'),
 });
 

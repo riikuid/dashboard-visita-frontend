@@ -28,6 +28,57 @@ export function useCompaniesApi() {
     }
   }, []);
 
+  const saveVisitorCompany = useCallback(
+    async (data: CompanyFormData, companyId?: string) => {
+      try {
+        const isUpdate = !!companyId;
+        const url = isUpdate
+          ? `${import.meta.env.VITE_BACKEND_SERVER}/company/${companyId}`
+          : `${import.meta.env.VITE_BACKEND_SERVER}/company`;
+        const method = isUpdate ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to ${isUpdate ? 'update' : 'create'} company: ${res.status}`);
+        }
+
+        // Ambil data company yang baru dibuat dari response (untuk POST)
+        let newCompany: Company | null = null;
+        if (!isUpdate) {
+          newCompany = await res.json(); // Asumsi API mengembalikan data company baru
+          if (!newCompany || !newCompany.id) {
+            throw new Error('API did not return a valid company object.');
+          }
+        }
+
+        // Refresh data setelah create/update
+        await fetchCompanies();
+
+        toast({
+          title: 'Success!',
+          description: `Company ${isUpdate ? 'updated' : 'created'} successfully.`,
+        });
+
+        return isUpdate ? true : newCompany; // Kembalikan true untuk update, atau object company untuk create
+      } catch (err) {
+        setErrorSnack(`Failed to ${companyId ? 'update' : 'create'} company`);
+        toast({
+          title: 'Error!',
+          description: `Something went wrong while ${companyId ? 'updating' : 'creating'} the company.\n ${err}`,
+        });
+        return false; // Gagal
+      }
+    },
+    [fetchCompanies]
+  );
+
   // Create or update company
   const saveCompany = useCallback(
     async (data: CompanyFormData, companyId?: string) => {
@@ -114,5 +165,5 @@ export function useCompaniesApi() {
     fetchCompanies();
   }, [fetchCompanies]);
 
-  return { companies, loading, error, errorSnack, saveCompany, deleteCompany };
+  return { companies, loading, error, errorSnack, saveCompany, saveVisitorCompany, deleteCompany };
 }
