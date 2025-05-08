@@ -49,7 +49,7 @@ export const sidebarData: SidebarData = {
           url: '/',
           icon: IconLayoutDashboard,
         },
-       
+
         {
           title: 'Visitor Management',
           icon: IconChecklist,
@@ -65,12 +65,10 @@ export const sidebarData: SidebarData = {
               icon: IconBuildings,
             },
           ],
-          
         },
-        
       ],
     },
-    
+
     {
       title: 'Devices',
       items: [
@@ -101,75 +99,80 @@ export const sidebarData: SidebarData = {
         },
       ],
     },
-    {
-      title: 'Pages',
-      items: [
-        {
-          title: 'Auth',
-          icon: IconLockAccess,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/sign-in',
-            },
-            {
-              title: 'Sign Up',
-              url: '/sign-up',
-            },
-            {
-              title: 'Forgot Password',
-              url: '/forgot-password',
-            },
-          ],
-        },
-        {
-          title: 'Errors',
-          icon: IconBug,
-          items: [
-            {
-              title: 'Not Found',
-              url: '/404',
-              icon: IconError404,
-            },
-          ],
-        },
-      ],
-    },
+    // {
+    //   title: 'Pages',
+    //   items: [
+    //     {
+    //       title: 'Auth',
+    //       icon: IconLockAccess,
+    //       items: [
+    //         {
+    //           title: 'Sign In',
+    //           url: '/sign-in',
+    //         },
+    //         {
+    //           title: 'Sign Up',
+    //           url: '/sign-up',
+    //         },
+    //         {
+    //           title: 'Forgot Password',
+    //           url: '/forgot-password',
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: 'Errors',
+    //       icon: IconBug,
+    //       items: [
+    //         {
+    //           title: 'Not Found',
+    //           url: '/404',
+    //           icon: IconError404,
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
     {
       title: 'Other',
       items: [
         {
-          title: 'Tasks',
-          url: '/tasks',
+          title: 'Exit',
+          url: '/exit',
           icon: IconChecklist,
         },
-        {
-          title: 'Settings',
-          icon: IconSettings,
-          items: [
-            {
-              title: 'Profile',
-              url: '/settings',
-              icon: IconUserCog,
-            },
-          ],
-        },
-        {
-          title: 'Help Center',
-          url: '/help-center',
-          icon: IconHelp,
-        },
-        {
-          title: 'Errors',
-          icon: IconBug,
-          items: [
-            {
-              title: 'Not Found',
-              url: '/404',
-              icon: IconError404,
-            },
-          ],
-        },
+        // {
+        //   title: 'Tasks',
+        //   url: '/tasks',
+        //   icon: IconChecklist,
+        // },
+        // {
+        //   title: 'Settings',
+        //   icon: IconSettings,
+        //   items: [
+        //     {
+        //       title: 'Profile',
+        //       url: '/settings',
+        //       icon: IconUserCog,
+        //     },
+        //   ],
+        // },
+        // {
+        //   title: 'Help Center',
+        //   url: '/help-center',
+        //   icon: IconHelp,
+        // },
+        // {
+        //   title: 'Errors',
+        //   icon: IconBug,
+        //   items: [
+        //     {
+        //       title: 'Not Found',
+        //       url: '/404',
+        //       icon: IconError404,
+        //     },
+        //   ],
+        // },
       ],
     },
   ],
