@@ -14,7 +14,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexImport } from './routes/_authenticated/index'
+import { Route as authRouteImport } from './routes/(auth)/route'
+import { Route as IndexImport } from './routes/index'
 import { Route as authSignInImport } from './routes/(auth)/sign-in'
 
 // Create Virtual Routes
@@ -41,6 +42,9 @@ const AuthenticatedHelpCenterIndexLazyImport = createFileRoute(
 )()
 const AuthenticatedDepartmentsIndexLazyImport = createFileRoute(
   '/_authenticated/departments/',
+)()
+const AuthenticatedDashboardIndexLazyImport = createFileRoute(
+  '/_authenticated/dashboard/',
 )()
 const AuthenticatedCardRfidIndexLazyImport = createFileRoute(
   '/_authenticated/card-rfid/',
@@ -72,10 +76,15 @@ const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthenticatedIndexRoute = AuthenticatedIndexImport.update({
+const authRouteRoute = authRouteImport.update({
+  id: '/(auth)',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRoute,
 } as any)
 
 const errors404LazyRoute = errors404LazyImport
@@ -88,17 +97,17 @@ const errors404LazyRoute = errors404LazyImport
 
 const authSignUpLazyRoute = authSignUpLazyImport
   .update({
-    id: '/(auth)/sign-up',
+    id: '/sign-up',
     path: '/sign-up',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => authRouteRoute,
   } as any)
   .lazy(() => import('./routes/(auth)/sign-up.lazy').then((d) => d.Route))
 
 const authForgotPasswordLazyRoute = authForgotPasswordLazyImport
   .update({
-    id: '/(auth)/forgot-password',
+    id: '/forgot-password',
     path: '/forgot-password',
-    getParentRoute: () => rootRoute,
+    getParentRoute: () => authRouteRoute,
   } as any)
   .lazy(() =>
     import('./routes/(auth)/forgot-password.lazy').then((d) => d.Route),
@@ -114,9 +123,9 @@ const AuthenticatedSettingsRouteLazyRoute =
   )
 
 const authSignInRoute = authSignInImport.update({
-  id: '/(auth)/sign-in',
+  id: '/sign-in',
   path: '/sign-in',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authRouteRoute,
 } as any)
 
 const AuthenticatedTicketsIndexLazyRoute =
@@ -166,6 +175,15 @@ const AuthenticatedDepartmentsIndexLazyRoute =
     import('./routes/_authenticated/departments/index.lazy').then(
       (d) => d.Route,
     ),
+  )
+
+const AuthenticatedDashboardIndexLazyRoute =
+  AuthenticatedDashboardIndexLazyImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/dashboard/index.lazy').then((d) => d.Route),
   )
 
 const AuthenticatedCardRfidIndexLazyRoute =
@@ -257,6 +275,20 @@ const AuthenticatedVisitorManagementCompaniesCompanyIdLazyRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/(auth)': {
+      id: '/(auth)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof authRouteImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -269,7 +301,7 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof authRouteImport
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -283,14 +315,14 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordLazyImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof authRouteImport
     }
     '/(auth)/sign-up': {
       id: '/(auth)/sign-up'
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof authSignUpLazyImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof authRouteImport
     }
     '/(errors)/404': {
       id: '/(errors)/404'
@@ -298,13 +330,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/404'
       preLoaderRoute: typeof errors404LazyImport
       parentRoute: typeof rootRoute
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexImport
-      parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/settings/account': {
       id: '/_authenticated/settings/account'
@@ -332,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/card-rfid'
       fullPath: '/card-rfid'
       preLoaderRoute: typeof AuthenticatedCardRfidIndexLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexLazyImport
       parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/departments/': {
@@ -402,6 +434,22 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
+interface authRouteRouteChildren {
+  authSignInRoute: typeof authSignInRoute
+  authForgotPasswordLazyRoute: typeof authForgotPasswordLazyRoute
+  authSignUpLazyRoute: typeof authSignUpLazyRoute
+}
+
+const authRouteRouteChildren: authRouteRouteChildren = {
+  authSignInRoute: authSignInRoute,
+  authForgotPasswordLazyRoute: authForgotPasswordLazyRoute,
+  authSignUpLazyRoute: authSignUpLazyRoute,
+}
+
+const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
+  authRouteRouteChildren,
+)
+
 interface AuthenticatedSettingsRouteLazyRouteChildren {
   AuthenticatedSettingsAccountLazyRoute: typeof AuthenticatedSettingsAccountLazyRoute
   AuthenticatedSettingsIndexLazyRoute: typeof AuthenticatedSettingsIndexLazyRoute
@@ -421,10 +469,10 @@ const AuthenticatedSettingsRouteLazyRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteLazyRoute: typeof AuthenticatedSettingsRouteLazyRouteWithChildren
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAccessControlsIndexLazyRoute: typeof AuthenticatedAccessControlsIndexLazyRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedCardRfidIndexLazyRoute: typeof AuthenticatedCardRfidIndexLazyRoute
+  AuthenticatedDashboardIndexLazyRoute: typeof AuthenticatedDashboardIndexLazyRoute
   AuthenticatedDepartmentsIndexLazyRoute: typeof AuthenticatedDepartmentsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
   AuthenticatedTasksIndexLazyRoute: typeof AuthenticatedTasksIndexLazyRoute
@@ -438,11 +486,11 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteLazyRoute:
     AuthenticatedSettingsRouteLazyRouteWithChildren,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAccessControlsIndexLazyRoute:
     AuthenticatedAccessControlsIndexLazyRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedCardRfidIndexLazyRoute: AuthenticatedCardRfidIndexLazyRoute,
+  AuthenticatedDashboardIndexLazyRoute: AuthenticatedDashboardIndexLazyRoute,
   AuthenticatedDepartmentsIndexLazyRoute:
     AuthenticatedDepartmentsIndexLazyRoute,
   AuthenticatedHelpCenterIndexLazyRoute: AuthenticatedHelpCenterIndexLazyRoute,
@@ -462,17 +510,18 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 export interface FileRoutesByFullPath {
+  '/': typeof authRouteRouteWithChildren
   '': typeof AuthenticatedRouteRouteWithChildren
   '/sign-in': typeof authSignInRoute
   '/settings': typeof AuthenticatedSettingsRouteLazyRouteWithChildren
   '/forgot-password': typeof authForgotPasswordLazyRoute
   '/sign-up': typeof authSignUpLazyRoute
   '/404': typeof errors404LazyRoute
-  '/': typeof AuthenticatedIndexRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/card-rfid': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/settings/': typeof AuthenticatedSettingsIndexLazyRoute
@@ -485,15 +534,17 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/': typeof authRouteRouteWithChildren
+  '': typeof AuthenticatedRouteRouteWithChildren
   '/sign-in': typeof authSignInRoute
   '/forgot-password': typeof authForgotPasswordLazyRoute
   '/sign-up': typeof authSignUpLazyRoute
   '/404': typeof errors404LazyRoute
-  '/': typeof AuthenticatedIndexRoute
   '/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/card-rfid': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/settings': typeof AuthenticatedSettingsIndexLazyRoute
@@ -507,17 +558,19 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/(auth)': typeof authRouteRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/(auth)/sign-in': typeof authSignInRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteLazyRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordLazyRoute
   '/(auth)/sign-up': typeof authSignUpLazyRoute
   '/(errors)/404': typeof errors404LazyRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountLazyRoute
   '/_authenticated/access-controls/': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/card-rfid/': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexLazyRoute
   '/_authenticated/departments/': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexLazyRoute
@@ -532,17 +585,18 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | ''
     | '/sign-in'
     | '/settings'
     | '/forgot-password'
     | '/sign-up'
     | '/404'
-    | '/'
     | '/settings/account'
     | '/access-controls'
     | '/apps'
     | '/card-rfid'
+    | '/dashboard'
     | '/departments'
     | '/help-center'
     | '/settings/'
@@ -554,15 +608,17 @@ export interface FileRouteTypes {
     | '/visitor-management/visitors'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
+    | ''
     | '/sign-in'
     | '/forgot-password'
     | '/sign-up'
     | '/404'
-    | '/'
     | '/settings/account'
     | '/access-controls'
     | '/apps'
     | '/card-rfid'
+    | '/dashboard'
     | '/departments'
     | '/help-center'
     | '/settings'
@@ -574,17 +630,19 @@ export interface FileRouteTypes {
     | '/visitor-management/visitors'
   id:
     | '__root__'
+    | '/'
+    | '/(auth)'
     | '/_authenticated'
     | '/(auth)/sign-in'
     | '/_authenticated/settings'
     | '/(auth)/forgot-password'
     | '/(auth)/sign-up'
     | '/(errors)/404'
-    | '/_authenticated/'
     | '/_authenticated/settings/account'
     | '/_authenticated/access-controls/'
     | '/_authenticated/apps/'
     | '/_authenticated/card-rfid/'
+    | '/_authenticated/dashboard/'
     | '/_authenticated/departments/'
     | '/_authenticated/help-center/'
     | '/_authenticated/settings/'
@@ -598,18 +656,16 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  authRouteRoute: typeof authRouteRouteWithChildren
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  authSignInRoute: typeof authSignInRoute
-  authForgotPasswordLazyRoute: typeof authForgotPasswordLazyRoute
-  authSignUpLazyRoute: typeof authSignUpLazyRoute
   errors404LazyRoute: typeof errors404LazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  authRouteRoute: authRouteRouteWithChildren,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  authSignInRoute: authSignInRoute,
-  authForgotPasswordLazyRoute: authForgotPasswordLazyRoute,
-  authSignUpLazyRoute: authSignUpLazyRoute,
   errors404LazyRoute: errors404LazyRoute,
 }
 
@@ -623,21 +679,31 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/",
+        "/(auth)",
         "/_authenticated",
+        "/(errors)/404"
+      ]
+    },
+    "/": {
+      "filePath": "index.tsx"
+    },
+    "/(auth)": {
+      "filePath": "(auth)/route.tsx",
+      "children": [
         "/(auth)/sign-in",
         "/(auth)/forgot-password",
-        "/(auth)/sign-up",
-        "/(errors)/404"
+        "/(auth)/sign-up"
       ]
     },
     "/_authenticated": {
       "filePath": "_authenticated/route.tsx",
       "children": [
         "/_authenticated/settings",
-        "/_authenticated/",
         "/_authenticated/access-controls/",
         "/_authenticated/apps/",
         "/_authenticated/card-rfid/",
+        "/_authenticated/dashboard/",
         "/_authenticated/departments/",
         "/_authenticated/help-center/",
         "/_authenticated/tasks/",
@@ -649,7 +715,8 @@ export const routeTree = rootRoute
       ]
     },
     "/(auth)/sign-in": {
-      "filePath": "(auth)/sign-in.tsx"
+      "filePath": "(auth)/sign-in.tsx",
+      "parent": "/(auth)"
     },
     "/_authenticated/settings": {
       "filePath": "_authenticated/settings/route.lazy.tsx",
@@ -660,17 +727,15 @@ export const routeTree = rootRoute
       ]
     },
     "/(auth)/forgot-password": {
-      "filePath": "(auth)/forgot-password.lazy.tsx"
+      "filePath": "(auth)/forgot-password.lazy.tsx",
+      "parent": "/(auth)"
     },
     "/(auth)/sign-up": {
-      "filePath": "(auth)/sign-up.lazy.tsx"
+      "filePath": "(auth)/sign-up.lazy.tsx",
+      "parent": "/(auth)"
     },
     "/(errors)/404": {
       "filePath": "(errors)/404.lazy.tsx"
-    },
-    "/_authenticated/": {
-      "filePath": "_authenticated/index.tsx",
-      "parent": "/_authenticated"
     },
     "/_authenticated/settings/account": {
       "filePath": "_authenticated/settings/account.lazy.tsx",
@@ -686,6 +751,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/card-rfid/": {
       "filePath": "_authenticated/card-rfid/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/dashboard/": {
+      "filePath": "_authenticated/dashboard/index.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/departments/": {
