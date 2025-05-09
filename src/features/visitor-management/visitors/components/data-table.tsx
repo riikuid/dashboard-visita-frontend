@@ -129,6 +129,9 @@ export function DataTable<TData extends { id: string }, TValue>({
                     <TableCell
                       key={cell.id}
                       onClick={() => handleCellClick(cell.column.id, row)}
+                      className={
+                        cell.column.id === 'Company' ? 'cursor-pointer' : ''
+                      }
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
