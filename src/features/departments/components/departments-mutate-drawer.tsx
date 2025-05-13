@@ -3,6 +3,15 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Form,
   FormControl,
   FormField,
@@ -11,15 +20,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
 import {
   Department,
   departmentFormData,
@@ -66,27 +66,28 @@ export function DepartmentsMutateDrawer({
   }
 
   return (
-    <Sheet
+    <Dialog
       open={open}
       onOpenChange={(v) => {
         onOpenChange(v)
-        form.reset()
+        if (!v) form.reset()
       }}
     >
-      <SheetContent className='flex flex-col'>
-        <SheetHeader className='text-left'>
-          <SheetTitle>{isUpdate ? 'Update' : 'Create'} Department</SheetTitle>
-          <SheetDescription>
+      <DialogContent className='sm:max-w-md'>
+        <DialogHeader className='text-left'>
+          <DialogTitle>{isUpdate ? 'Update' : 'Create'} Department</DialogTitle>
+          <DialogDescription>
             {isUpdate
               ? 'Update the department by providing necessary info.'
               : 'Add a new department by providing necessary info.'}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
+
         <Form {...form}>
           <form
             id='departments-form'
             onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-5 flex-1'
+            className='space-y-5'
           >
             <FormField
               control={form.control}
@@ -107,12 +108,13 @@ export function DepartmentsMutateDrawer({
             />
           </form>
         </Form>
-        <SheetFooter className='gap-2'>
-          <SheetClose asChild>
+
+        <DialogFooter className='gap-2'>
+          <DialogClose asChild>
             <Button variant='outline' disabled={isSubmitting}>
               Close
             </Button>
-          </SheetClose>
+          </DialogClose>
           <Button
             form='departments-form'
             type='submit'
@@ -145,8 +147,8 @@ export function DepartmentsMutateDrawer({
             )}
             Save changes
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
