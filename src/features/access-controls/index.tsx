@@ -18,6 +18,7 @@ export default function AccessControls() {
     accessControls,
     saveAccessControl,
     deleteAccessControl,
+    checkConnection,
   } = useAccessControlApi()
 
   const { departments } = useDepartmentApi()
@@ -49,7 +50,8 @@ export default function AccessControls() {
             loading={loading}
             error={error}
             data={accessControls}
-            columns={columns(departments)}
+            columns={columns(departments, checkConnection)}
+            onCheckConnection={checkConnection}
           />
         </div>
       </Main>

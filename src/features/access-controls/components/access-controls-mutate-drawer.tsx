@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconEye, IconEyeOff } from '@tabler/icons-react'
-import md5 from 'md5'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,78 +35,27 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Department } from '@/features/departments/data/schema'
-import {
-  AccessControl,
-  AccessControlFormData,
-  accessControlSchema,
-} from '../data/schema'
 
-// Fungsi Digest Authentication
-interface DigestAuthParams {
-  username: string
-  password: string
-  method: string
-  uri: string
-  realm: string
-  nonce: string
-  qop?: string
-  nc?: string
-  cnonce?: string
-  opaque?: string
-}
+// Define the form schema
+export const accessControlSchema = z.object({
+  department_id: z.string().min(1, 'Department is required'),
+  name: z.string().min(1, 'Name is required'),
+  ip_address: z
+    .string()
+    .min(1, 'IP Address is required')
+    .regex(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/, 'Invalid IP Address format'),
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+  location: z.string().min(1, 'Location is required'),
+  is_active: z.boolean(),
+})
 
-function parseDigestHeader(header: string): Record<string, string> {
-  const parts: Record<string, string> = {}
-  const regex = /([a-z0-9_-]+)="?([^",]+)"?/gi
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(header)) !== null) {
-    parts[match[1]] = match[2]
-  }
-  return parts
-}
-
-function generateDigestHeader(params: DigestAuthParams): string {
-  const {
-    username,
-    password,
-    method,
-    uri,
-    realm,
-    nonce,
-    qop,
-    nc = '00000001',
-    cnonce = Math.random().toString(36).substring(2, 10),
-    opaque,
-  } = params
-
-  const ha1 = md5(`${username}:${realm}:${password}`)
-  const ha2 = md5(`${method}:${uri}`)
-  let response: string
-  if (qop === 'auth') {
-    response = md5(`${ha1}:${nonce}:${nc}:${cnonce}:${qop}:${ha2}`)
-  } else {
-    response = md5(`${ha1}:${nonce}:${ha2}`)
-  }
-
-  const parts = [
-    `Digest username="${username}"`,
-    `realm="${realm}"`,
-    `nonce="${nonce}"`,
-    `uri="${uri}"`,
-    `response="${response}"`,
-  ]
-  if (qop) parts.push(`qop=${qop}`)
-  if (nc) parts.push(`nc=${nc}`)
-  if (cnonce) parts.push(`cnonce="${cnonce}"`)
-  if (opaque) parts.push(`opaque="${opaque}"`)
-
-  return parts.join(', ')
-}
+export type AccessControlFormData = z.infer<typeof accessControlSchema>
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow?: AccessControl
+  currentRow?: AccessControlFormData & { id?: string }
   departments: Department[]
   saveAccessControl: (
     data: AccessControlFormData,
@@ -124,117 +73,23 @@ export function AccessControlsMutateDrawer({
   const isUpdate = !!currentRow
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDepartmentPopoverOpen, setIsDepartmentPopoverOpen] = useState(false)
-  const [lastChecked, setLastChecked] = useState<Date | null>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const [connectionError, setConnectionError] = useState<string | null>(null)
-  const [isChecking, setIsChecking] = useState(false) // Tambahkan state untuk loading
 
   const form = useForm<AccessControlFormData>({
     resolver: zodResolver(accessControlSchema),
     defaultValues: currentRow ?? {
-      name: '',
       department_id: '',
-      location: '',
+      name: '',
       ip_address: '',
       username: '',
       password: '',
+      location: '',
       is_active: false,
     },
   })
 
-  const handleCheckConnection = async () => {
-    setIsChecking(true)
-    setConnectionError(null)
-    setLastChecked(new Date())
-
-    const { ip_address, username, password } = form.getValues()
-
-    // Validasi input
-    if (!ip_address || !username || !password) {
-      setConnectionError('IP Address, Username, and Password are required.')
-      form.setValue('is_active', false)
-      setIsChecking(false)
-      return
-    }
-
-    // Validasi format IP Address
-    const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/
-    if (!ipRegex.test(ip_address)) {
-      setConnectionError('Invalid IP Address format.')
-      form.setValue('is_active', false)
-      setIsChecking(false)
-      return
-    }
-
-    const url = `http://${ip_address}/ISAPI/status`
-    const method = 'GET'
-    const uri = '/ISAPI/status'
-
-    try {
-      // Langkah 1: Kirim permintaan awal untuk mendapatkan challenge
-      const initialResponse = await fetch(url, {
-        method,
-      })
-
-      if (initialResponse.status !== 401) {
-        // Jika tidak mendapatkan 401, periksa apakah langsung berhasil
-        if (initialResponse.status === 200) {
-          form.setValue('is_active', true)
-        } else {
-          form.setValue('is_active', false)
-          setConnectionError(
-            `Unexpected response: ${initialResponse.statusText}`
-          )
-        }
-        setIsChecking(false)
-        return
-      }
-
-      // Langkah 2: Parse header WWW-Authenticate
-      const wwwAuthenticate = initialResponse.headers.get('WWW-Authenticate')
-      if (!wwwAuthenticate) {
-        throw new Error('No WWW-Authenticate header received.')
-      }
-
-      const challenge = parseDigestHeader(wwwAuthenticate)
-
-      // Langkah 3: Buat header Authorization menggunakan generateDigestHeader
-      const digestHeader = generateDigestHeader({
-        username,
-        password,
-        method,
-        uri,
-        realm: challenge.realm,
-        nonce: challenge.nonce,
-        qop: challenge.qop,
-        opaque: challenge.opaque,
-      })
-
-      // Langkah 4: Kirim permintaan kedua dengan header Authorization
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: digestHeader,
-        },
-      })
-
-      if (response.status === 200) {
-        form.setValue('is_active', true)
-      } else {
-        form.setValue('is_active', false)
-        setConnectionError(`Failed to connect: ${response.statusText}`)
-      }
-    } catch (error) {
-      form.setValue('is_active', false)
-      setConnectionError(
-        error instanceof Error ? error.message : 'Failed to connect to device.'
-      )
-    } finally {
-      setIsChecking(false)
-    }
-  }
-
   const onSubmit = async (data: AccessControlFormData) => {
+    console.log('Submitting form with data:', data)
     setIsSubmitting(true)
     try {
       const success = await saveAccessControl(data, currentRow?.id)
@@ -242,6 +97,8 @@ export function AccessControlsMutateDrawer({
         onOpenChange(false)
         form.reset()
       }
+    } catch (error) {
+      console.error('Error saving access control:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -254,11 +111,8 @@ export function AccessControlsMutateDrawer({
         onOpenChange(v)
         if (!v) {
           form.reset()
-          setLastChecked(null)
           setIsDepartmentPopoverOpen(false)
           setShowPassword(false)
-          setConnectionError(null)
-          setIsChecking(false)
         }
       }}
     >
@@ -273,7 +127,12 @@ export function AccessControlsMutateDrawer({
         <Form {...form}>
           <form
             id='access-control-form'
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(
+              (data) => onSubmit(data),
+              (errors) => {
+                console.log('Validation errors:', errors)
+              }
+            )}
             className='space-y-5 flex-1 px-4'
           >
             {/* Department Field */}
@@ -349,6 +208,21 @@ export function AccessControlsMutateDrawer({
               )}
             />
 
+            {/* Location Field */}
+            <FormField
+              control={form.control}
+              name='location'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder='Enter Location' />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Device IP Address Field */}
             <FormField
               control={form.control}
@@ -414,41 +288,7 @@ export function AccessControlsMutateDrawer({
               )}
             />
 
-            {/* Check Device Connection */}
-            <div className='flex-col space-y-3'>
-              <Button
-                type='button'
-                variant='outline'
-                className='font-normal'
-                onClick={handleCheckConnection}
-                disabled={isChecking}
-              >
-                {isChecking ? 'Checking...' : 'Check Device Connection'}
-              </Button>
-              {lastChecked && (
-                <div className='flex-col space-y-1'>
-                  <span className='text-sm'>Connection:</span>
-                  <span
-                    className={cn(
-                      'text-sm',
-                      form.getValues('is_active')
-                        ? 'text-green-500'
-                        : 'text-red-500'
-                    )}
-                  >
-                    {form.getValues('is_active') ? 'Active' : 'Inactive'}
-                  </span>
-                  <p className='text-sm text-muted-foreground'>
-                    Checked at: {lastChecked.toLocaleString()}
-                  </p>
-                  {connectionError && (
-                    <p className='text-sm text-red-500'>{connectionError}</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Hidden Field for is_active */}
+            {/* Hidden is_active Field */}
             <FormField
               control={form.control}
               name='is_active'
@@ -458,7 +298,7 @@ export function AccessControlsMutateDrawer({
                     <Input
                       type='hidden'
                       {...field}
-                      value={field.value ? 'true' : 'false'}
+                      value={field.value.toString()}
                     />
                   </FormControl>
                 </FormItem>
@@ -470,7 +310,11 @@ export function AccessControlsMutateDrawer({
           <SheetClose asChild>
             <Button variant='outline'>Cancel</Button>
           </SheetClose>
-          <Button form='access-control-form' type='submit'>
+          <Button
+            form='access-control-form'
+            type='submit'
+            disabled={isSubmitting}
+          >
             {isSubmitting && (
               <span className='absolute left-3'>
                 <svg

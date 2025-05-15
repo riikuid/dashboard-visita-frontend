@@ -26,15 +26,10 @@ import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 
 interface DataTableProps<TData, TValue> {
-  columns:
-    | ColumnDef<TData, TValue>[]
-    | ((props: {
-        onCheckConnection?: (id: string) => void
-      }) => ColumnDef<TData, TValue>[])
+  columns: ColumnDef<TData, TValue>[]
   data: TData[]
   loading: boolean
   error: string | null
-  onCheckConnection?: (id: string) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -42,7 +37,6 @@ export function DataTable<TData, TValue>({
   data,
   loading,
   error,
-  onCheckConnection,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -52,15 +46,9 @@ export function DataTable<TData, TValue>({
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const resolvedColumns = React.useMemo(
-    () =>
-      typeof columns === 'function' ? columns({ onCheckConnection }) : columns,
-    [columns, onCheckConnection]
-  )
-
   const table = useReactTable({
     data,
-    columns: resolvedColumns,
+    columns,
     state: {
       sorting,
       columnVisibility,
@@ -107,7 +95,7 @@ export function DataTable<TData, TValue>({
             {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={resolvedColumns.length}
+                  colSpan={columns.length}
                   className='items-center justify-center h-24 text-center'
                 >
                   <Spinner size={'small'} /> Loading
@@ -116,7 +104,7 @@ export function DataTable<TData, TValue>({
             ) : error ? (
               <TableRow>
                 <TableCell
-                  colSpan={resolvedColumns.length}
+                  colSpan={columns.length}
                   className='h-24 text-center'
                 >
                   {error}
@@ -141,7 +129,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={resolvedColumns.length}
+                  colSpan={columns.length}
                   className='h-24 text-center'
                 >
                   No results.
