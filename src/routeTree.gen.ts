@@ -47,6 +47,9 @@ const AuthenticatedDepartmentsIndexLazyImport = createFileRoute(
 const AuthenticatedDashboardIndexLazyImport = createFileRoute(
   '/_authenticated/dashboard/',
 )()
+const AuthenticatedCctvIndexLazyImport = createFileRoute(
+  '/_authenticated/cctv/',
+)()
 const AuthenticatedCardRfidIndexLazyImport = createFileRoute(
   '/_authenticated/card-rfid/',
 )()
@@ -192,6 +195,16 @@ const AuthenticatedDashboardIndexLazyRoute =
   } as any).lazy(() =>
     import('./routes/_authenticated/dashboard/index.lazy').then((d) => d.Route),
   )
+
+const AuthenticatedCctvIndexLazyRoute = AuthenticatedCctvIndexLazyImport.update(
+  {
+    id: '/cctv/',
+    path: '/cctv/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any,
+).lazy(() =>
+  import('./routes/_authenticated/cctv/index.lazy').then((d) => d.Route),
+)
 
 const AuthenticatedCardRfidIndexLazyRoute =
   AuthenticatedCardRfidIndexLazyImport.update({
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCardRfidIndexLazyImport
       parentRoute: typeof AuthenticatedRouteImport
     }
+    '/_authenticated/cctv/': {
+      id: '/_authenticated/cctv/'
+      path: '/cctv'
+      fullPath: '/cctv'
+      preLoaderRoute: typeof AuthenticatedCctvIndexLazyImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -488,6 +508,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccessControlsIndexLazyRoute: typeof AuthenticatedAccessControlsIndexLazyRoute
   AuthenticatedAppsIndexLazyRoute: typeof AuthenticatedAppsIndexLazyRoute
   AuthenticatedCardRfidIndexLazyRoute: typeof AuthenticatedCardRfidIndexLazyRoute
+  AuthenticatedCctvIndexLazyRoute: typeof AuthenticatedCctvIndexLazyRoute
   AuthenticatedDashboardIndexLazyRoute: typeof AuthenticatedDashboardIndexLazyRoute
   AuthenticatedDepartmentsIndexLazyRoute: typeof AuthenticatedDepartmentsIndexLazyRoute
   AuthenticatedHelpCenterIndexLazyRoute: typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -506,6 +527,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedAccessControlsIndexLazyRoute,
   AuthenticatedAppsIndexLazyRoute: AuthenticatedAppsIndexLazyRoute,
   AuthenticatedCardRfidIndexLazyRoute: AuthenticatedCardRfidIndexLazyRoute,
+  AuthenticatedCctvIndexLazyRoute: AuthenticatedCctvIndexLazyRoute,
   AuthenticatedDashboardIndexLazyRoute: AuthenticatedDashboardIndexLazyRoute,
   AuthenticatedDepartmentsIndexLazyRoute:
     AuthenticatedDepartmentsIndexLazyRoute,
@@ -538,6 +560,7 @@ export interface FileRoutesByFullPath {
   '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/card-rfid': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/cctv': typeof AuthenticatedCctvIndexLazyRoute
   '/dashboard': typeof AuthenticatedDashboardIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -562,6 +585,7 @@ export interface FileRoutesByTo {
   '/access-controls': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/apps': typeof AuthenticatedAppsIndexLazyRoute
   '/card-rfid': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/cctv': typeof AuthenticatedCctvIndexLazyRoute
   '/dashboard': typeof AuthenticatedDashboardIndexLazyRoute
   '/departments': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -589,6 +613,7 @@ export interface FileRoutesById {
   '/_authenticated/access-controls/': typeof AuthenticatedAccessControlsIndexLazyRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexLazyRoute
   '/_authenticated/card-rfid/': typeof AuthenticatedCardRfidIndexLazyRoute
+  '/_authenticated/cctv/': typeof AuthenticatedCctvIndexLazyRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexLazyRoute
   '/_authenticated/departments/': typeof AuthenticatedDepartmentsIndexLazyRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexLazyRoute
@@ -616,6 +641,7 @@ export interface FileRouteTypes {
     | '/access-controls'
     | '/apps'
     | '/card-rfid'
+    | '/cctv'
     | '/dashboard'
     | '/departments'
     | '/help-center'
@@ -639,6 +665,7 @@ export interface FileRouteTypes {
     | '/access-controls'
     | '/apps'
     | '/card-rfid'
+    | '/cctv'
     | '/dashboard'
     | '/departments'
     | '/help-center'
@@ -664,6 +691,7 @@ export interface FileRouteTypes {
     | '/_authenticated/access-controls/'
     | '/_authenticated/apps/'
     | '/_authenticated/card-rfid/'
+    | '/_authenticated/cctv/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/departments/'
     | '/_authenticated/help-center/'
@@ -726,6 +754,7 @@ export const routeTree = rootRoute
         "/_authenticated/access-controls/",
         "/_authenticated/apps/",
         "/_authenticated/card-rfid/",
+        "/_authenticated/cctv/",
         "/_authenticated/dashboard/",
         "/_authenticated/departments/",
         "/_authenticated/help-center/",
@@ -778,6 +807,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/card-rfid/": {
       "filePath": "_authenticated/card-rfid/index.lazy.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/cctv/": {
+      "filePath": "_authenticated/cctv/index.lazy.tsx",
       "parent": "/_authenticated"
     },
     "/_authenticated/dashboard/": {

@@ -24,8 +24,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <Image
           src='/images/logo-pjb-pln.png' // ✅ Pastikan path-nya benar dan file ada di public/
           alt='PJB Logo'
-          width={120}
-          height={40}
+          width={180}
+          height={80}
         />
         {/* <TeamSwitcher teams={sidebarData.teams} /> */}
       </SidebarHeader>

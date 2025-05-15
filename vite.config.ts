@@ -15,4 +15,12 @@ export default defineConfig({
       '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
     },
   },
+  server: {
+    host: true,
+    allowedHosts: [
+      // Ganti ini sesuai host ngrok kamu atau gunakan wildcard
+      '5726-103-24-58-37.ngrok-free.app',
+      '*.ngrok-free.app',
+    ],
+  },
 })
