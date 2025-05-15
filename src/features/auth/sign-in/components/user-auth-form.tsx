@@ -6,8 +6,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from '@tanstack/react-router'
 import { useRouter } from '@tanstack/react-router'
+
 import { useAuthStore } from '@/stores/authStore'
-import { API } from '@/lib/api'
+import { API, HEADER } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -60,7 +61,9 @@ export function UserAuthForm({
     try {
       const res = await fetch(API.LOGIN, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          ...HEADER.JSON_HEADER,
+        },
         body: JSON.stringify(data),
       })
       if (!res.ok) {

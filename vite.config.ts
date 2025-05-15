@@ -19,7 +19,7 @@ export default defineConfig({
     host: true,
     allowedHosts: [
       // Ganti ini sesuai host ngrok kamu atau gunakan wildcard
-      '22d1-103-24-58-37.ngrok-free.app',
+      '5726-103-24-58-37.ngrok-free.app',
       '*.ngrok-free.app',
     ],
   },
