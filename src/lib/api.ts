@@ -17,3 +17,10 @@ export const API = {
   USER: `${API_BASE}/user`,
   VISITOR: `${API_BASE}/visitor`,
 }
+
+export const HEADER = {
+  JSON_HEADER: { 'Content-Type': 'application/json' },
+  AUTH_HEADER: (token: any) => ({
+    Authorization: `Bearer ${token}`,
+  }),
+}

@@ -95,7 +95,7 @@ export function NavUser({
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to='/settings/notifications'>
+                <Link to='/settings'>
                   <Bell />
                   Notifications
                 </Link>
