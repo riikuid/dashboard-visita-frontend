@@ -6,13 +6,19 @@ import {
   IconChecklist,
   IconDevicesCog, // IconError404,
   // IconHelp,
-  // IconLayoutDashboard,
-  // IconLockAccess,
+  IconLayoutDashboard, // IconLockAccess,
+
   // IconSettings,
   IconTicket, // IconUserCog,
   IconUsers,
 } from '@tabler/icons-react'
-import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
+import {
+  IconCamera,
+  IconVideo,
+  IconEye,
+  IconDeviceCctv,
+} from '@tabler/icons-react'
+import { Video, AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
@@ -42,11 +48,11 @@ export const sidebarData: SidebarData = {
     {
       title: 'General',
       items: [
-        // {
-        //   title: 'Dashboard',
-        //   url: '/',
-        //   icon: IconLayoutDashboard,
-        // },
+        {
+          title: 'Dashboard',
+          url: '/',
+          icon: IconLayoutDashboard,
+        },
 
         {
           title: 'Visitor Management',
@@ -79,6 +85,11 @@ export const sidebarData: SidebarData = {
           title: 'Card RFID',
           url: '/card-rfid',
           icon: IconCards,
+        },
+        {
+          title: 'CCTV',
+          url: '/cctv',
+          icon: IconDeviceCctv,
         },
       ],
     },
@@ -131,47 +142,47 @@ export const sidebarData: SidebarData = {
     //     },
     //   ],
     // },
-    {
-      title: 'Other',
-      items: [
-        {
-          title: 'Exit',
-          url: '/exit',
-          icon: IconChecklist,
-        },
-        // {
-        //   title: 'Tasks',
-        //   url: '/tasks',
-        //   icon: IconChecklist,
-        // },
-        // {
-        //   title: 'Settings',
-        //   icon: IconSettings,
-        //   items: [
-        //     {
-        //       title: 'Profile',
-        //       url: '/settings',
-        //       icon: IconUserCog,
-        //     },
-        //   ],
-        // },
-        // {
-        //   title: 'Help Center',
-        //   url: '/help-center',
-        //   icon: IconHelp,
-        // },
-        // {
-        //   title: 'Errors',
-        //   icon: IconBug,
-        //   items: [
-        //     {
-        //       title: 'Not Found',
-        //       url: '/404',
-        //       icon: IconError404,
-        //     },
-        //   ],
-        // },
-      ],
-    },
+    // {
+    //   title: 'Other',
+    //   items: [
+    //     {
+    //       title: 'Exit',
+    //       url: '/exit',
+    //       icon: IconChecklist,
+    //     },
+    // {
+    //   title: 'Tasks',
+    //   url: '/tasks',
+    //   icon: IconChecklist,
+    // },
+    // {
+    //   title: 'Settings',
+    //   icon: IconSettings,
+    //   items: [
+    //     {
+    //       title: 'Profile',
+    //       url: '/settings',
+    //       icon: IconUserCog,
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: 'Help Center',
+    //   url: '/help-center',
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: 'Errors',
+    //   icon: IconBug,
+    //   items: [
+    //     {
+    //       title: 'Not Found',
+    //       url: '/404',
+    //       icon: IconError404,
+    //     },
+    //   ],
+    // },
+    // ],
+    // },
   ],
 }
